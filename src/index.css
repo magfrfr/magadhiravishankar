@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  /* midnight beach */
+  --bay: #0a0e1e;        /* night base — indigo-black, never flat black */
+  --undertow: #101a33;   /* elevated surface */
+  --biolume: #7fe9de;    /* the line — bioluminescent seafoam */
+  --sodium: #f2a97e;     /* warm accent — sodium lamp on sand */
+  --moonwash: #eae6f2;   /* text — lavender-tinted white */
+  --kiko: #b99be8;       /* bunnies + retro artifacts */
+  --dim: rgba(234, 230, 242, 0.68);
+  --faint: rgba(234, 230, 242, 0.4);
+  --line-rule: rgba(127, 233, 222, 0.18);
+
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-story: 'Newsreader', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bay);
+  color: var(--moonwash);
+  font-family: var(--font-story);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--biolume);
+  color: var(--bay);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
