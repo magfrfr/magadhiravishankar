@@ -44,7 +44,7 @@ export default function Inventory({ reducedMotion }) {
                   <motion.button
                     key={id}
                     type="button"
-                    className={`inv-cell${open ? ' inv-cell--open' : ''}`}
+                    className={`inv-cell glass${open ? ' inv-cell--open' : ''}`}
                     onClick={() => setSelected(open ? null : id)}
                     onPointerEnter={() => setSelected(id)}
                     onPointerLeave={() => setSelected(s => (s === id ? null : s))}

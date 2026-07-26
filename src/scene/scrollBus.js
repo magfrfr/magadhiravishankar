@@ -23,7 +23,11 @@ export function riseWeight(u) {
 
 export const bus = {
   u: 0,                      // continuous chapter coordinate: 0=hero … 4=connect
+  vel: 0,                    // smoothed scroll velocity, px/s (signed)
+  velN: 0,                   // vel clamped to -1..1 — drives skew/streak/squash
+  sceneReady: false,         // true once the 3D scene has rendered a frame (loader waits on it)
   mouse: { x: 0, y: 0 },     // NDC, -1..1
+  mouseActive: false,        // a fine pointer has actually moved (gates orb poke)
   mouseEnergy: 0,            // decays; excites the sea
   orb: {
     x: 0, y: 0, z: 0,
@@ -45,7 +49,10 @@ export function readChapterCoord() {
   for (const id of CHAPTER_IDS) {
     const el = document.getElementById(`ch-${id}`);
     if (!el) return bus.u; // DOM not ready — hold last value
-    const r = el.getBoundingClientRect();
+    // a pinned section reports its sticky frame, not its scroll length, so the
+    // orb holds that chapter's identity for as long as the frame holds the screen
+    const frame = el.querySelector('.rail-sticky') || el;
+    const r = frame.getBoundingClientRect();
     centers.push(r.top + r.height / 2);
   }
   if (centerline <= centers[0]) return 0;

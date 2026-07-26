@@ -20,13 +20,18 @@ export const RIM_OF = {
   [ID.GRID]: new THREE.Color('#7fe9de'),
 };
 
-// Where the orb sits at each chapter center (world units, camera at z=8 fov 38)
+// Where the orb sits at each chapter center (world units, camera at z=8 fov 38).
+// Rule: the orb never sits behind a text block — it takes the empty half.
 const ANCHORS = [
-  new THREE.Vector3(1.9, 1.15, 0),    // hero — moon top right
-  new THREE.Vector3(1.9, 0.75, 0),    // builder — wireframe globe beside the experience entries
+  new THREE.Vector3(0.0, 1.5, 0),     // hero — glass bubble floats above the name
+  new THREE.Vector3(-2.75, 0.55, 0),  // builder — globe holds the left margin, entries ride the right
   new THREE.Vector3(2.2, 1.9, -0.3),  // everything — ball parks high, ceding the floor to the inventory
-  new THREE.Vector3(2.1, 1.35, -0.2), // connect — moon on the right, clear of the text
+  new THREE.Vector3(0.0, 1.9, -0.2),  // connect — moon sits above the sign-off, not behind it
 ];
+
+// Per-chapter size trim, on top of the identity radius: keeps the orb inside
+// its own space instead of spilling under the type.
+const SCALE_AT = [0.8, 0.72, 1.0, 0.55];
 
 export const ORB_PATH = new THREE.CatmullRomCurve3(ANCHORS, false, 'centripetal', 0.6);
 
@@ -51,7 +56,7 @@ export function orbStateAt(u) {
     idA: a,
     idB: b,
     blend: t,
-    scale: lerp(SCALE_OF[a], SCALE_OF[b], t),
+    scale: lerp(SCALE_OF[a], SCALE_OF[b], t) * lerp(SCALE_AT[i], SCALE_AT[i + 1], f),
     w,
     pos: ORB_PATH.getPoint(u / last),
   };

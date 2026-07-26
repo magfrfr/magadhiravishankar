@@ -3,13 +3,19 @@
 // Identity codes match chapterMath.ID: 0 moon, 1 spotlight, 2 tennis ball, 3 wireframe globe.
 
 export const orbVertex = /* glsl */ `
+uniform vec3 uPokeDir;   // object-space direction toward the cursor
+uniform float uPokeAmt;  // 0..1 cursor proximity — surface swells toward it
 varying vec3 vN;
 varying vec3 vP;
 varying vec3 vView;
+varying float vPoke;
 void main() {
   vN = normalize(normalMatrix * normal);
   vP = position;
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  float pk = pow(max(dot(normalize(position), uPokeDir), 0.0), 3.0) * uPokeAmt;
+  vPoke = pk;
+  vec3 pos = position + normal * pk * 0.16;
+  vec4 mv = modelViewMatrix * vec4(pos, 1.0);
   vView = normalize(-mv.xyz);
   gl_Position = projectionMatrix * mv;
 }
@@ -25,6 +31,7 @@ uniform vec3 uRim;
 varying vec3 vN;
 varying vec3 vP;
 varying vec3 vView;
+varying float vPoke;
 
 float hash(vec3 p) {
   return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453);
@@ -60,14 +67,27 @@ float fbm(vec3 p) {
   return v;
 }
 
-vec3 moonCol(vec3 p) {
-  float n = fbm(p * 2.4);
-  float maria = smoothstep(0.5, 0.72, fbm(p * 1.6 + 5.2));
-  float craters = smoothstep(0.62, 0.78, fbm(p * 5.0 + 11.0));
-  vec3 base = mix(vec3(0.88, 0.86, 0.95), vec3(0.62, 0.60, 0.74), n);
-  base = mix(base, vec3(0.46, 0.45, 0.60), maria * 0.55);
-  base = mix(base, vec3(0.38, 0.37, 0.52), craters * 0.5);
-  return base;
+// id 0: liquid iridescent glass — deep tinted body, glow pooling where the
+// sphere is thickest, currents drifting inside. The premium layers (reflection,
+// iridescence, specular) land on top of this in main() via moonW.
+vec3 moonCol(vec3 p, vec3 n, vec3 v) {
+  float depth = fbm(p * 1.8 + vec3(0.0, uTime * 0.06, 0.0));
+  vec3 body = mix(vec3(0.05, 0.06, 0.14), vec3(0.16, 0.15, 0.34), depth);
+  float thick = max(dot(n, v), 0.0);
+  body += vec3(0.32, 0.28, 0.60) * pow(thick, 2.2) * (0.5 + 0.5 * depth);
+  return body;
+}
+
+// procedural studio the surface pretends to reflect: graded sky, a horizon
+// band and two softbox hot spots — the look of a cube-map with none of the cost
+vec3 envCol(vec3 r) {
+  float up = r.y * 0.5 + 0.5;
+  vec3 sky = mix(vec3(0.06, 0.07, 0.16), vec3(0.55, 0.60, 0.85), pow(up, 1.6));
+  sky += vec3(0.25, 0.20, 0.45) * exp(-abs(r.y) * 6.0) * 0.6;
+  float s1 = pow(max(dot(r, normalize(vec3(-0.6, 0.75, 0.3))), 0.0), 22.0);
+  float s2 = pow(max(dot(r, normalize(vec3(0.7, 0.35, -0.4))), 0.0), 34.0);
+  sky += vec3(1.0, 0.97, 0.92) * s1 * 1.6 + vec3(0.75, 0.80, 1.0) * s2 * 1.1;
+  return sky;
 }
 
 vec3 spotCol(vec3 n, vec3 v) {
@@ -96,26 +116,60 @@ vec3 gridCol(vec3 p) {
   float mer = smoothstep(0.88, 0.985, gm) * (1.0 - pow(abs(sp.y), 6.0));
   float par = smoothstep(0.86, 0.98, gp);
   float lines = clamp(mer + par, 0.0, 1.0);
-  vec3 body = vec3(0.055, 0.075, 0.155);
-  return body + vec3(0.50, 0.91, 0.87) * lines * 1.15;
+  vec3 body = vec3(0.05, 0.065, 0.135);
+  // dim lines on purpose: bloom used to blow this identity out over the entries
+  return body + vec3(0.50, 0.91, 0.87) * lines * 0.55;
 }
 
 vec3 colorFor(float id, vec3 p, vec3 n, vec3 v) {
-  if (id < 0.5) return moonCol(p);
+  if (id < 0.5) return moonCol(p, n, v);
   if (id < 1.5) return spotCol(n, v);
   if (id < 2.5) return ballCol(p);
   return gridCol(p);
 }
 
 void main() {
-  vec3 n = normalize(vN);
+  vec3 n0 = normalize(vN);
   vec3 v = normalize(vView);
+
+  // how much of the glass identity (id 0) is on screen this frame:
+  // 1 at hero/connect, 0 on globe/ball — the hybrid dial for every layer below
+  float moonW = (uIdA < 0.5 ? (1.0 - uBlend) : 0.0) + (uIdB < 0.5 ? uBlend : 0.0);
+
+  // liquid surface: ripple the normal for the glass orb only, others stay crisp
+  vec3 n = n0;
+  if (moonW > 0.001) {
+    float e = 0.35;
+    vec3 pp = vP * 2.2 + vec3(0.0, uTime * 0.12, 0.0);
+    vec3 grad = vec3(
+      fbm(pp + vec3(e, 0.0, 0.0)) - fbm(pp - vec3(e, 0.0, 0.0)),
+      fbm(pp + vec3(0.0, e, 0.0)) - fbm(pp - vec3(0.0, e, 0.0)),
+      fbm(pp + vec3(0.0, 0.0, e)) - fbm(pp - vec3(0.0, 0.0, e))
+    );
+    n = normalize(n0 + grad * (0.22 * moonW));
+  }
+
   vec3 a = colorFor(uIdA, vP, n, v);
   vec3 b = colorFor(uIdB, vP, n, v);
   vec3 col = mix(a, b, uBlend);
 
   float fresnel = pow(1.0 - max(dot(n, v), 0.0), 2.4);
+
+  // faked studio reflection — strongest at grazing angles, like real glass
+  vec3 R = reflect(-v, n);
+  col += envCol(R) * mix(0.14, 0.60, moonW) * (0.35 + 0.65 * fresnel);
+
+  // thin-film iridescence: rainbow interference sliding with the view angle
+  vec3 irid = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fresnel * 3.0 + uTime * 0.05));
+  col += irid * fresnel * mix(0.10, 0.55, moonW);
+
+  // wet-glass key light — the hotspot bloom finally has something to catch
+  vec3 L = normalize(vec3(-0.45, 0.7, 0.55));
+  float spec = pow(max(dot(n, normalize(L + v)), 0.0), mix(80.0, 110.0, moonW));
+  col += vec3(1.0, 0.98, 0.95) * spec * mix(0.25, 1.6, moonW);
+
   col += uRim * fresnel * 0.85;
+  col += uRim * vPoke * 0.55; // the poked patch glows toward the cursor
 
   // night-side shading so the sphere reads as a body, not a flat disc
   float shade = 0.72 + 0.28 * max(dot(n, normalize(vec3(-0.4, 0.5, 1.0))), 0.0);

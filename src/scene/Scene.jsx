@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { bus } from './scrollBus';
 import Orb from './Orb';
 import Stars from './environments/Stars';
+import Grade from './Grade';
 
 // Gentle camera parallax toward the cursor; also decays the sea's ripple energy.
 function Rig({ enabled }) {
@@ -26,10 +27,20 @@ export default function Scene({ liteMode, reducedMotion }) {
     const move = (e) => {
       bus.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       bus.mouse.y = -((e.clientY / window.innerHeight) * 2 - 1);
+      bus.mouseActive = true;
       bus.mouseEnergy = Math.min(bus.mouseEnergy + 0.06, 1);
     };
+    // pointer off the window: drop the attraction so the orb springs home
+    const leave = (e) => { if (!e.relatedTarget) bus.mouseActive = false; };
+    const blur = () => { bus.mouseActive = false; };
     window.addEventListener('pointermove', move, { passive: true });
-    return () => window.removeEventListener('pointermove', move);
+    window.addEventListener('pointerout', leave, { passive: true });
+    window.addEventListener('blur', blur);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerout', leave);
+      window.removeEventListener('blur', blur);
+    };
   }, [liteMode]);
 
   return (
@@ -42,6 +53,7 @@ export default function Scene({ liteMode, reducedMotion }) {
         <Rig enabled={!liteMode && !reducedMotion} />
         <Stars liteMode={liteMode} />
         <Orb reducedMotion={reducedMotion} />
+        {!liteMode && !reducedMotion && <Grade />}
       </Canvas>
     </div>
   );

@@ -21,13 +21,13 @@ export default function Connect({ reducedMotion, liteMode }) {
           {SOCIALS.map(s => (
             <li key={s.kind}>
               {liteMode ? (
-                <a href={s.href} target="_blank" rel="noreferrer">
+                <a className="glass" href={s.href} target="_blank" rel="noreferrer">
                   <span className="social-kind">{s.kind}</span>
                   <span className="social-label">{s.label}</span>
                 </a>
               ) : (
                 <Magnetic strength={0.18} className="social-magnet">
-                  <a href={s.href} target="_blank" rel="noreferrer">
+                  <a className="glass" href={s.href} target="_blank" rel="noreferrer">
                     <span className="social-kind">{s.kind}</span>
                     <span className="social-label">{s.label}</span>
                   </a>

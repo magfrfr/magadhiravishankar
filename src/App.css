@@ -33,6 +33,15 @@
   100% { transform: translate(0, 0); }
 }
 
+/* cinematic frame: darkened corners pull the eye to center, over the content */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 100% at 50% 45%, transparent 52%, rgba(6, 10, 24, 0.5) 100%);
+}
+
 .cursor-glow {
   position: fixed;
   top: 0;
@@ -44,6 +53,210 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(127, 233, 222, 0.09) 0%, transparent 65%);
   mix-blend-mode: screen;
+}
+
+/* ── boot loader ─────────────────────────────────────── */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--bay);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  pointer-events: none;
+  transition: opacity 0.65s ease;
+}
+
+/* the curtain lifts rather than dissolving — the page is revealed from the top */
+.loader {
+  clip-path: inset(0 0 0 0);
+  transition: opacity 0.65s ease, clip-path 0.75s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.loader--fade {
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+}
+
+/* the dial: an arc that fills with the counter, under a sweeping highlight */
+.loader-dial {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.loader-dial--done {
+  transform: scale(1.06);
+}
+
+.loader-arc {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.loader-arc-track,
+.loader-arc-fill {
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.loader-arc-track {
+  stroke: var(--line-rule);
+}
+
+.loader-arc-fill {
+  stroke: var(--biolume);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(127, 233, 222, 0.55));
+}
+
+.loader-sweep {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 72%, rgba(127, 233, 222, 0.16) 88%, transparent);
+  animation: loader-sweep 1.6s linear infinite;
+}
+
+@keyframes loader-sweep {
+  to { transform: rotate(360deg); }
+}
+
+.loader-line {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  color: var(--dim);
+  text-transform: lowercase;
+}
+
+.loader-line--done {
+  color: var(--biolume);
+}
+
+.loader-pct {
+  font-family: var(--font-display);
+  font-weight: 200;
+  font-size: 2.6rem;
+  letter-spacing: -0.04em;
+  color: var(--moonwash);
+  font-variant-numeric: tabular-nums;
+}
+
+.loader-est {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: var(--faint);
+}
+
+/* ── custom cursor ───────────────────────────────────── */
+.has-cursor,
+.has-cursor * {
+  cursor: none !important;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 95;
+  pointer-events: none;
+  border-radius: 50%;
+  mix-blend-mode: difference;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--moonwash);
+}
+
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: 1px solid rgba(234, 230, 242, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cursor-ring-label {
+  font-family: var(--font-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.14em;
+  color: var(--moonwash);
+  text-transform: lowercase;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cursor-ring--label .cursor-ring-label {
+  opacity: 1;
+}
+
+/* ── glass ───────────────────────────────────────────── */
+/* one frosted surface for the whole site: the scene canvas sits behind the
+   content layer, so backdrop-filter really refracts the orb and the fluid.
+   The rim is a conic gradient masked to a 1px ring — thin-film, not a border. */
+.glass {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(234, 230, 242, 0.1);
+  background:
+    linear-gradient(142deg, rgba(234, 230, 242, 0.09), rgba(127, 233, 222, 0.03) 45%, rgba(185, 155, 232, 0.07));
+  backdrop-filter: blur(14px) saturate(1.35);
+  -webkit-backdrop-filter: blur(14px) saturate(1.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 18px 44px rgba(6, 10, 24, 0.4);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 210deg,
+    rgba(127, 233, 222, 0.75),
+    rgba(185, 155, 232, 0.6),
+    rgba(242, 169, 126, 0.45),
+    rgba(127, 233, 222, 0.75)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.35;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.glass:hover {
+  border-color: rgba(234, 230, 242, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 24px 60px rgba(6, 10, 24, 0.5);
+}
+
+.glass:hover::after {
+  opacity: 0.85;
 }
 
 /* ── chrome ──────────────────────────────────────────── */
@@ -103,21 +316,18 @@
   top: 18px;
   right: 20px;
   z-index: 40;
-  background: rgba(16, 26, 51, 0.6);
-  border: 1px solid var(--line-rule);
   color: var(--dim);
   font-family: var(--font-mono);
   font-size: 0.62rem;
   letter-spacing: 0.08em;
-  padding: 6px 10px;
-  backdrop-filter: blur(4px);
-  transition: color 0.2s, border-color 0.2s;
+  padding: 7px 12px;
+  border-radius: 999px;
+  transition: color 0.2s;
 }
 
 .sound-toggle:hover,
 .sound-toggle[aria-pressed='true'] {
   color: var(--biolume);
-  border-color: var(--biolume);
 }
 
 /* ── chapters ────────────────────────────────────────── */
@@ -157,6 +367,20 @@ main {
   color: var(--moonwash);
 }
 
+/* scroll velocity leans the display type (vars driven by rAF in App) */
+.chapter-title,
+.hero-name {
+  transform: skewY(var(--skew, 0deg)) scaleY(var(--stretch, 1));
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* cursor-proximity weight ripple settles smoothly */
+.chapter-title span span,
+.hero-name .hero-letter {
+  transition: font-variation-settings 0.25s ease;
+}
+
 .chapter-body {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
@@ -179,14 +403,30 @@ main {
   color: var(--moonwash);
 }
 
+/* editorial index rows — numbered entries on their own frosted panels */
 .xp {
   list-style: none;
-  margin: 1.6rem 0;
-  border-left: 1px solid var(--line-rule);
+  margin: 2.4rem 0 0;
+  counter-reset: xp;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .xp li {
-  padding: 0.7rem 0 0.7rem 1.2rem;
+  counter-increment: xp;
+  padding: 1.7rem 2rem 1.7rem 4.4rem;
+}
+
+.xp li::before {
+  content: '0' counter(xp);
+  position: absolute;
+  left: 1.7rem;
+  top: 1.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  color: var(--faint);
 }
 
 .xp-when {
@@ -195,15 +435,26 @@ main {
   font-size: 0.62rem;
   letter-spacing: 0.1em;
   color: var(--sodium);
-  margin-bottom: 0.2rem;
 }
 
 .xp-role {
   display: block;
-  font-family: var(--font-story);
-  font-size: 1.02rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.8vw, 2.3rem);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
   color: var(--moonwash);
-  margin-bottom: 0.25rem;
+  margin: 0.35rem 0 0.2rem;
+}
+
+.xp-org {
+  display: block;
+  font-family: var(--font-story);
+  font-style: italic;
+  font-size: 1.02rem;
+  color: var(--dim);
+  margin-bottom: 0.6rem;
 }
 
 .xp-point {
@@ -227,16 +478,364 @@ main {
   font-size: 0.6rem;
   letter-spacing: 0.06em;
   color: var(--biolume);
-  border: 1px solid var(--line-rule);
-  padding: 3px 9px;
+  padding: 5px 12px;
   border-radius: 999px;
-  background: rgba(127, 233, 222, 0.05);
-  transition: border-color 0.25s, background 0.25s;
 }
 
-.tag:hover {
-  border-color: var(--biolume);
-  background: rgba(127, 233, 222, 0.12);
+/* ── per-chapter composition: break the left-column monotony ── */
+/* builder: block rides the right edge, title ranged right, globe holds the left */
+.chapter--builder {
+  justify-content: flex-end;
+}
+
+.chapter--builder .chapter-inner {
+  max-width: 880px;
+  margin-left: auto;
+}
+
+.chapter--builder .chapter-body {
+  grid-template-columns: 1fr;
+}
+
+.chapter--builder .chapter-title {
+  text-align: right;
+  transform-origin: right center;
+}
+
+.chapter--builder .tags {
+  justify-content: flex-end;
+}
+
+/* connect: centered sign-off, sitting below the moon rather than inside it */
+.chapter--connect {
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 10vh;
+}
+
+.chapter--connect .chapter-inner {
+  text-align: center;
+}
+
+.chapter--connect .chapter-title {
+  transform-origin: center;
+}
+
+.chapter--connect .story-line {
+  margin-inline: auto;
+  color: var(--moonwash);
+  text-shadow: 0 1px 18px rgba(6, 10, 24, 0.9), 0 0 6px rgba(6, 10, 24, 0.7);
+}
+
+.chapter--connect .chapter-title {
+  text-shadow: 0 2px 26px rgba(6, 10, 24, 0.55);
+}
+
+/* ── scroll ticker ───────────────────────────────────── */
+/* a frosted band between the work and the inventory. The orb crosses the middle
+   of the frame on this stretch, so the band is glass: the type stays readable
+   and the orb refracts through it instead of sitting behind bare text. */
+.ticker {
+  position: relative;
+  z-index: 4;
+  overflow: hidden;
+  padding: 1.6rem 0;
+  border-top: 1px solid var(--line-rule);
+  border-bottom: 1px solid var(--line-rule);
+  background: linear-gradient(180deg, rgba(234, 230, 242, 0.07), rgba(16, 26, 51, 0.5));
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+}
+
+.ticker-viewport {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.ticker-run {
+  display: flex;
+  align-items: baseline;
+}
+
+.ticker-item {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 4vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--moonwash);
+  white-space: nowrap;
+  padding-right: 2.2rem;
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+}
+
+/* every other phrase is outlined — the band reads as pattern, not a sentence */
+.ticker-item:nth-child(even) {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(234, 230, 242, 0.45);
+}
+
+.ticker-item::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--biolume);
+  opacity: 0.75;
+  flex: none;
+}
+
+/* ── cd player ───────────────────────────────────────── */
+.cd-dock {
+  position: fixed;
+  right: 20px;
+  bottom: 18px;
+  z-index: 40;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cd-dock--gone {
+  display: none;
+}
+
+.cd {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 230, 242, 0.12);
+  padding: 0;
+  flex: none;
+}
+
+.cd-ring {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+
+.cd-ring-track,
+.cd-ring-fill {
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.cd-ring-track {
+  stroke: rgba(234, 230, 242, 0.12);
+}
+
+.cd-ring-fill {
+  stroke: var(--biolume);
+  stroke-linecap: round;
+}
+
+/* the disc: a rainbow rake over dark vinyl, spinning only while it plays */
+.cd-disc {
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 210deg,
+      rgba(127, 233, 222, 0.5),
+      rgba(185, 155, 232, 0.45) 22%,
+      rgba(242, 169, 126, 0.4) 44%,
+      rgba(127, 233, 222, 0.45) 66%,
+      rgba(185, 155, 232, 0.5) 88%,
+      rgba(127, 233, 222, 0.5)
+    ),
+    radial-gradient(circle at 50% 50%, rgba(10, 14, 30, 0.85), rgba(10, 14, 30, 0.2));
+  animation: cd-spin 3.4s linear infinite;
+  animation-play-state: paused;
+}
+
+.cd-dock--on .cd-disc {
+  animation-play-state: running;
+}
+
+@keyframes cd-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cd-hole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  border-radius: 50%;
+  background: var(--bay);
+  border: 1px solid rgba(234, 230, 242, 0.2);
+}
+
+/* the label rides out from under the disc, and stays out while it plays */
+.cd-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+  opacity: 0;
+  transform: translateX(10px);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.cd-dock:hover .cd-meta,
+.cd-dock--on .cd-meta {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.cd-title {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--moonwash);
+}
+
+.cd-artist {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--faint);
+}
+
+/* ── activity rail ("all of it", desktop) ────────────── */
+/* the section is tall so the sticky frame can hold the screen while the
+   track travels sideways — scroll length is the rail's length */
+.chapter--everything.chapter--rail {
+  display: block;
+  min-height: 360vh;
+  padding: 0;
+}
+
+.rail-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3rem;
+  overflow: hidden;
+}
+
+.chapter--everything.chapter--rail .chapter-inner {
+  padding: 0 8vw;
+  max-width: 1100px;
+  margin-top: 0;
+}
+
+.chapter--rail .story-line {
+  margin-bottom: 0.4rem;
+}
+
+.rail-track {
+  display: flex;
+  align-items: stretch;
+  gap: 22px;
+  padding: 2rem 8vw;
+  width: max-content;
+  will-change: transform;
+}
+
+.rail-card {
+  flex: 0 0 262px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 1.6rem 1.5rem 1.4rem;
+  /* leans with scroll speed — same var the titles skew from */
+  rotate: calc(var(--skew, 0deg) * -0.6);
+  translate: 0 0;
+  transition: translate 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.rail-card:hover {
+  translate: 0 -12px;
+}
+
+/* the gloss: a light source raking across the top-left of every pane */
+.rail-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.16), rgba(127, 233, 222, 0.07) 24%, transparent 48%),
+    radial-gradient(130% 70% at 12% -8%, rgba(185, 155, 232, 0.22), transparent 62%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.rail-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rail-card--pass {
+  flex-basis: 300px;
+  padding: 1.4rem;
+  justify-content: center;
+}
+
+.rail-card--pass img {
+  width: 100%;
+  display: block;
+}
+
+.rail-num {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  color: var(--faint);
+}
+
+.rail-sprite {
+  image-rendering: pixelated;
+  margin: 0.6rem 0 0.4rem;
+  filter: drop-shadow(0 10px 18px rgba(6, 10, 24, 0.55));
+}
+
+.rail-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.32rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--moonwash);
+}
+
+.rail-fact {
+  font-family: var(--font-story);
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--dim);
+  flex: 1;
+}
+
+.rail-cat {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: var(--sodium);
+  text-transform: lowercase;
 }
 
 /* ── inventory ("all of it") ─────────────────────────── */
@@ -299,20 +898,16 @@ main {
   align-items: center;
   gap: 6px;
   padding: 10px 8px;
-  background: rgba(16, 26, 51, 0.35);
-  border: 1px solid transparent;
+  border-radius: 14px;
   cursor: pointer;
-  transition: border-color 0.25s, background 0.25s;
 }
 
 .inv-cell img {
   image-rendering: pixelated;
 }
 
-.inv-cell:hover,
-.inv-cell--open {
-  border-color: var(--line-rule);
-  background: rgba(16, 26, 51, 0.6);
+.inv-cell--open::after {
+  opacity: 0.85;
 }
 
 .inv-name {
@@ -386,13 +981,21 @@ main {
 }
 
 /* ── hero ────────────────────────────────────────────── */
+/* the name is the floor of the frame, the glass bubble floats clear above it */
 .chapter--hero {
-  align-items: center;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 9vh;
 }
 
 .hero-inner {
   width: 100%;
   max-width: 1020px;
+  text-align: center;
+}
+
+.hero-name {
+  transform-origin: center center;
 }
 
 .hero-letter {
@@ -435,27 +1038,21 @@ main {
 /* ── connect ─────────────────────────────────────────── */
 .socials {
   list-style: none;
-  margin-top: 2.6rem;
+  margin-top: 3rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  max-width: 420px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem 1.6rem;
 }
 
 .socials a {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
   text-decoration: none;
-  padding: 0.7rem 0.4rem;
-  border-bottom: 1px solid var(--line-rule);
-  transition: background 0.2s, padding-left 0.2s;
-}
-
-.socials a:hover {
-  background: rgba(127, 233, 222, 0.05);
-  padding-left: 0.9rem;
+  padding: 0.85rem 1.4rem;
+  border-radius: 14px;
 }
 
 .social-kind {
@@ -476,6 +1073,7 @@ main {
   margin-top: 6rem;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 2.4rem;
   font-family: var(--font-mono);
   font-size: 0.6rem;
@@ -612,6 +1210,22 @@ main {
 }
 
 /* ── responsive / lite ───────────────────────────────── */
+/* phones: keep the frosted look, drop the blur — backdrop-filter stacked over
+   the WebGL canvas is the most expensive thing a mobile GPU here can do */
+@media (pointer: coarse), (max-width: 768px) {
+  .glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(142deg, rgba(234, 230, 242, 0.07), rgba(16, 26, 51, 0.6));
+  }
+
+  .ticker {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(180deg, rgba(234, 230, 242, 0.06), rgba(16, 26, 51, 0.72));
+  }
+}
+
 @media (max-width: 820px) {
   .chapter {
     padding: 12vh 7vw;
@@ -643,6 +1257,10 @@ main {
     align-items: flex-start;
   }
 
+  .xp li {
+    padding-left: 2.4rem;
+  }
+
   .story-line {
     font-size: 1.05rem;
   }
@@ -653,5 +1271,22 @@ main {
 
   .site-footer {
     gap: 1.2rem;
+  }
+
+  .ticker {
+    padding: 1.1rem 0;
+  }
+
+  .cd {
+    width: 58px;
+    height: 58px;
+  }
+
+  .cd-disc {
+    inset: 8px;
+  }
+
+  .cd-meta {
+    display: none;
   }
 }

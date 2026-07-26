@@ -5,7 +5,32 @@ export const META = {
   fullName: 'Magadhi Ravishankar',
   tagline: 'Biotech undergrad at the brain–machine edge. Chennai, always.',
   est: 'est. 17.01.06',
-  version: 'v3.5',
+  version: 'v4.6',
+};
+
+// Boot sequence copy — the site "tunes in" before the hero.
+export const LOADER = {
+  line: 'acquiring signal',
+  done: 'signal acquired',
+};
+
+// Marquee band between the work and the inventory. Facts only — every line
+// here already appears somewhere else on the site.
+export const TICKER = [
+  'biotech at the brain–machine edge',
+  '70.6% BCI accuracy',
+  'top 20 national',
+  '150+ startups vetted',
+  'jack of all trades, master of some',
+  'chennai, always',
+];
+
+// The CD player. public/music/track.wav is a generated placeholder tone —
+// drop the real song in its place and put the real title/artist here.
+export const MUSIC = {
+  title: 'no track yet',
+  artist: 'placeholder tone',
+  src: '/music/track.wav',
 };
 
 export const SOCIALS = [
@@ -52,12 +77,12 @@ export const CHAPTERS = [
         role: 'Motor Imagery BCI',
         org: 'personal project',
         points: [
-          '109 subjects · PhysioNet EEG',
-          '8–30 Hz mu/beta · CSP features · LDA + SVM · stratified k-fold CV',
+          'PhysioNet EEG · 64 channels · left vs right hand imagery',
+          '8–30 Hz mu/beta · CSP features · SVM 70.6% test, 75.5% cross-validated',
         ],
       },
     ],
-    tags: ['109 subjects', 'top 20 national', '150+ startups vetted'],
+    tags: ['70.6% BCI accuracy', 'top 20 national', '150+ startups vetted'],
     photos: [],
   },
   {

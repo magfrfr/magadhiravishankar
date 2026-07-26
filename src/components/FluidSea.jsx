@@ -25,10 +25,11 @@ export default function FluidSea({ liteMode }) {
         el.style.opacity = '0';
         return;
       }
-      el.style.opacity = String(Math.max(seaW * 0.9, riseW * 0.8));
-      // waves band: transparent sky → fluid low; the rise pulls the edge to the top
-      const from = lerp(52, -30, riseW);
-      const to = lerp(78, 0, riseW);
+      el.style.opacity = String(Math.max(seaW * 0.9, riseW * 0.62));
+      // waves band: transparent sky → fluid low; the rise pulls the edge up, but
+      // both edges stay under the type — the fluid is never behind the words
+      const from = lerp(62, 22, riseW);
+      const to = lerp(84, 54, riseW);
       const grad = `linear-gradient(to bottom, rgba(0,0,0,0) ${from}%, #000 ${to}%)`;
       el.style.maskImage = grad;
       el.style.webkitMaskImage = grad;

@@ -13,10 +13,11 @@ export default function useChapterFade(ref, reducedMotion, { fadeOut = true, lit
     fadeOut ? [0.08, 0.28, 0.7, 0.94] : [0.08, 0.28, 1, 1],
     fadeOut ? [0, 1, 1, 0] : [0, 1, 1, 1]
   );
-  const y = useTransform(scrollYProgress, [0, 0.28, 0.7, 1], [90, 0, 0, -55]);
-  const blurPx = useTransform(scrollYProgress, [0, 0.24, 0.7, 1], [8, 0, 0, 6]);
+  const y = useTransform(scrollYProgress, [0, 0.28, 0.7, 1], [170, 0, 0, -110]);
+  const scale = useTransform(scrollYProgress, [0, 0.28, 0.7, 1], [0.94, 1, 1, 0.97]);
+  const blurPx = useTransform(scrollYProgress, [0, 0.24, 0.7, 1], [14, 0, 0, 10]);
   const filter = useMotionTemplate`blur(${blurPx}px)`;
   if (reducedMotion) return {};
-  if (lite) return { opacity, y, willChange: 'opacity, transform' }; // blur is too costly on phones
-  return { opacity, y, filter, willChange: 'opacity, transform, filter' };
+  if (lite) return { opacity, y, scale, willChange: 'opacity, transform' }; // blur is too costly on phones
+  return { opacity, y, scale, filter, willChange: 'opacity, transform, filter' };
 }
