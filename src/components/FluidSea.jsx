@@ -5,7 +5,9 @@ import { useEffect, useRef } from 'react';
 import Ferrofluid from './Ferrofluid';
 import { bus, seaWeight, riseWeight, lerp } from '../scene/scrollBus';
 
-const COLORS = ['#2b2eba', '#6366F1', '#6366F1'];
+// deepened for the pale build: her original indigos were tuned to glow against
+// midnight, and at that lightness they composite over paper as grey smears
+const COLORS = ['#1b1d8f', '#3538c9', '#4f46e5'];
 
 export default function FluidSea({ liteMode }) {
   const wrapRef = useRef(null);
@@ -25,11 +27,15 @@ export default function FluidSea({ liteMode }) {
         el.style.opacity = '0';
         return;
       }
-      el.style.opacity = String(Math.max(seaW * 0.9, riseW * 0.62));
+      // the rise used to fill the frame behind this chapter; at full strength it
+      // reads as smoke over the copy, which is the opposite of polished
+      el.style.opacity = String(Math.max(seaW * 0.85, riseW * 0.18));
       // waves band: transparent sky → fluid low; the rise pulls the edge up, but
       // both edges stay under the type — the fluid is never behind the words
-      const from = lerp(62, 22, riseW);
-      const to = lerp(84, 54, riseW);
+      // the band sits lower than it did on the dark build: deepened for paper,
+      // the fluid is opaque enough to crowd the hero tagline at the old edge
+      const from = lerp(74, 22, riseW);
+      const to = lerp(92, 54, riseW);
       const grad = `linear-gradient(to bottom, rgba(0,0,0,0) ${from}%, #000 ${to}%)`;
       el.style.maskImage = grad;
       el.style.webkitMaskImage = grad;

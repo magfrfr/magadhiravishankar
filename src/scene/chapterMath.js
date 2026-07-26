@@ -12,7 +12,7 @@ const IDENTITY_AT = [ID.MOON, ID.GRID, ID.BALL, ID.MOON];
 // Orb radius at each identity
 const SCALE_OF = { [ID.MOON]: 1.5, [ID.SPOT]: 0.95, [ID.BALL]: 0.5, [ID.GRID]: 0.85 };
 
-// Rim glow color per identity: moonwash, sodium, tennis, biolume
+// Rim color per identity: pearl, ember, tennis, tide
 export const RIM_OF = {
   [ID.MOON]: new THREE.Color('#c9c3dd'),
   [ID.SPOT]: new THREE.Color('#f2a97e'),

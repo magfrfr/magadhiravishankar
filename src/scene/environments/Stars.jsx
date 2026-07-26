@@ -3,9 +3,11 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { bus } from '../scrollBus';
 
-// Always-on night sky: the continuity glue between every chapter.
+// Always-on dust field: the continuity glue between every chapter. Ink specks
+// on the pale build, where white points were invisible — they read as motes
+// hanging in the room, and depth of field throws them nicely out of focus.
 // A ghost copy of the field trails the scroll velocity so fast scrolling
-// streaks the stars into short comet tails.
+// streaks them into short comet tails.
 export default function Stars({ liteMode }) {
   const ghost = useRef();
   const count = liteMode ? 120 : 320;
@@ -22,8 +24,8 @@ export default function Stars({ liteMode }) {
   const mat = useMemo(
     () =>
       new THREE.PointsMaterial({
-        color: '#eae6f2',
-        size: 0.025,
+        color: '#3d4766',
+        size: 0.03,
         transparent: true,
         opacity: 0.55,
         depthWrite: false,
@@ -35,8 +37,8 @@ export default function Stars({ liteMode }) {
   const ghostMat = useMemo(
     () =>
       new THREE.PointsMaterial({
-        color: '#eae6f2',
-        size: 0.025,
+        color: '#3d4766',
+        size: 0.03,
         transparent: true,
         opacity: 0,
         depthWrite: false,

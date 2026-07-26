@@ -5,32 +5,20 @@ export const META = {
   fullName: 'Magadhi Ravishankar',
   tagline: 'Biotech undergrad at the brain–machine edge. Chennai, always.',
   est: 'est. 17.01.06',
-  version: 'v4.6',
+  version: 'v6.0',
 };
 
-// Boot sequence copy — the site "tunes in" before the hero.
+// Boot sequence copy. Plain on purpose: the loader is the first thing a
+// recruiter sees, and it should not sound like a game.
 export const LOADER = {
-  line: 'acquiring signal',
-  done: 'signal acquired',
+  line: 'loading',
+  done: 'ready',
 };
 
-// Marquee band between the work and the inventory. Facts only — every line
-// here already appears somewhere else on the site.
-export const TICKER = [
-  'biotech at the brain–machine edge',
-  '70.6% BCI accuracy',
-  'top 20 national',
-  '150+ startups vetted',
-  'jack of all trades, master of some',
-  'chennai, always',
-];
-
-// The CD player. public/music/track.wav is a generated placeholder tone —
-// drop the real song in its place and put the real title/artist here.
-export const MUSIC = {
-  title: 'no track yet',
-  artist: 'placeholder tone',
-  src: '/music/track.wav',
+// The one call to action, held in the top corner and repeated at the sign-off.
+export const CONTACT = {
+  label: 'get in touch',
+  href: 'mailto:magadhi.rs@gmail.com',
 };
 
 export const SOCIALS = [
@@ -45,61 +33,82 @@ export const SOCIALS = [
 export const CHAPTERS = [
   {
     id: 'hero',
-    eyebrow: 'signal acquired · 60 fps',
+    eyebrow: 'biotech · neuro-AI · chennai',
     title: null,
   },
   {
     id: 'builder',
-    eyebrow: 'experience · 2024 → 2026',
+    eyebrow: 'selected work · 2024 → 2026',
     title: 'the work so far',
     lines: [],
+    // Editorial work list: the headline number is the thing a reader keeps, so
+    // it has to be real. `metric` is optional — an entry with no honest figure
+    // leaves the column empty rather than carrying an invented one.
     experience: [
+      {
+        when: '2026',
+        role: 'Motor Imagery BCI',
+        org: 'personal project',
+        metric: '68.3%',
+        metricLabel: 'cross-validated',
+        points: [
+          'PhysioNet EEG · 64 channels · left vs right hand imagery',
+          '8–30 Hz mu/beta band · CSP fitted per fold · SVM over LDA',
+        ],
+        stack: ['Python', 'MNE', 'scikit-learn', 'CSP', 'SVM'],
+        href: 'https://github.com/magfrfr/motor-imagery-bci',
+      },
+      {
+        when: 'may – jun 2026',
+        role: 'Web Development Intern',
+        org: 'AGT Go Digital',
+        points: [
+          'Custom WordPress child theme: theme.json design tokens, PHP block templates, hand-written CSS',
+          'Static export pipeline so a PHP site ships as flat files on Vercel',
+        ],
+        stack: ['WordPress', 'PHP', 'theme.json', 'CSS', 'Vercel'],
+        href: 'https://magadhi-portfolio.vercel.app',
+      },
       {
         when: 'dec 2024 – dec 2025',
         role: 'Customer Strategy & Founder’s Office',
         org: 'Walkins',
+        metric: 'Top 20',
+        metricLabel: 'nationally, Localhost HQ',
         points: [
-          'Top 20 nationally — Localhost HQ',
           'Secured grants, incubation approval and government certification',
         ],
+        stack: ['Strategy', 'Fundraising', 'Ops'],
       },
       {
         when: 'may – jul 2025',
         role: 'Investment Analysis',
         org: 'Alpha Seed Network',
+        metric: '150+',
+        metricLabel: 'startups vetted',
         points: [
-          '150+ startups vetted',
           'Reports on viability, market positioning and strategic fit',
         ],
-      },
-      {
-        when: '2026',
-        role: 'Motor Imagery BCI',
-        org: 'personal project',
-        points: [
-          'PhysioNet EEG · 64 channels · left vs right hand imagery',
-          '8–30 Hz mu/beta · CSP features · SVM 70.6% test, 75.5% cross-validated',
-        ],
+        stack: ['Due diligence', 'Market research'],
       },
     ],
-    tags: ['70.6% BCI accuracy', 'top 20 national', '150+ startups vetted'],
+    tags: [],
     photos: [],
   },
   {
     id: 'everything',
-    eyebrow: 'jack of all trades · master of some',
+    eyebrow: 'outside the lab',
     title: 'all of it',
     lines: [
-      'Jack of all trades, master of some.',
       'The pattern is the same every time: repeat the hard thing until it stops being hard.',
     ],
     tags: [],
     photos: [],
-    toybox: true,
+    range: true,
   },
   {
     id: 'connect',
-    eyebrow: 'signal found',
+    eyebrow: 'contact',
     title: 'say hi',
     lines: [
       'Most useful where technical depth and real-world execution are the same job. If you’re building something real, say hi.',

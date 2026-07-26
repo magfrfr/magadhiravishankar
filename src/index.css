@@ -2,16 +2,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
-  /* midnight beach */
-  --bay: #0a0e1e;        /* night base — indigo-black, never flat black */
-  --undertow: #101a33;   /* elevated surface */
-  --biolume: #7fe9de;    /* the line — bioluminescent seafoam */
-  --sodium: #f2a97e;     /* warm accent — sodium lamp on sand */
-  --moonwash: #eae6f2;   /* text — lavender-tinted white */
-  --kiko: #b99be8;       /* bunnies + retro artifacts */
-  --dim: rgba(234, 230, 242, 0.68);
-  --faint: rgba(234, 230, 242, 0.4);
-  --line-rule: rgba(127, 233, 222, 0.18);
+  /* pale studio: near-monochrome, 60/30/10 — periwinkle ground, ink type,
+     one warm ember. Colour is meant to come from the objects in the scene,
+     not from the type, which is why the accents are this restrained. */
+  --paper: #c9d2e7;     /* page ground — pale periwinkle */
+  --surface: #dce2f0;   /* elevated surface — a step lighter than the ground */
+  --tide: #0d5c63;      /* the line — deep teal, legible on pale */
+  --ember: #b4553a;     /* warm accent — burnt sodium */
+  --ink: #06080f;       /* type — near-black, never flat black */
+  --iris: #5b3fa0;      /* bunnies + retro artifacts */
+  --dim: rgba(6, 8, 15, 0.66);
+  --faint: rgba(6, 8, 15, 0.42);
+  --line-rule: rgba(6, 8, 15, 0.14);
+
+  /* highlight and shadow read opposite on a light ground: white is the
+     glass gloss, and shadows are cool rather than black */
+  --gloss: rgba(255, 255, 255, 0.7);
+  --shadow: rgba(40, 55, 95, 0.16);
+  --shadow-deep: rgba(40, 55, 95, 0.26);
 
   --font-display: 'Bricolage Grotesque', sans-serif;
   --font-story: 'Newsreader', serif;
@@ -29,15 +37,15 @@ html {
 }
 
 body {
-  background: var(--bay);
-  color: var(--moonwash);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-story);
   overflow-x: hidden;
 }
 
 ::selection {
-  background: var(--biolume);
-  color: var(--bay);
+  background: var(--tide);
+  color: var(--paper);
 }
 
 a {

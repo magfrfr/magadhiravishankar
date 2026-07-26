@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { play } from '../audio/sfx';
 
 // Her ID card on a retractable badge reel, latched to the top-right corner.
 // Pull it anywhere; let go and it zips home with a wobble.
@@ -63,7 +62,6 @@ export default function BadgeReel() {
       if (!drag.on) return;
       drag.on = false;
       card.style.cursor = 'grab';
-      if (drag.moved > 70) play('zip');
     }
     card.addEventListener('pointerdown', onDown);
     window.addEventListener('pointermove', onMove);

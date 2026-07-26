@@ -6,8 +6,8 @@ import { useEffect } from 'react';
 export default function useWeightRipple(ref, {
   enabled = true,
   selector = 'span span',
-  base = 800,
-  min = 520,
+  base = 400,
+  min = 200,
   radius = 150,
 } = {}) {
   useEffect(() => {

@@ -1,7 +1,7 @@
-import { Fragment, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
 import './App.css';
-import { CHAPTERS } from './content';
+import { CHAPTERS, CONTACT } from './content';
 import { bus } from './scene/scrollBus';
 
 // three.js is the heaviest thing we ship — let the story render first
@@ -15,9 +15,6 @@ import FluidSea from './components/FluidSea';
 import Magnetic from './components/Magnetic';
 import Loader from './components/Loader';
 import Cursor from './components/Cursor';
-import ScrollTicker from './components/ScrollTicker';
-import CDPlayer from './components/CDPlayer';
-import { isSoundOn, setSound } from './audio/sfx';
 
 const INTRO_KEY = 'mg-intro';
 
@@ -39,7 +36,6 @@ function useLiteMode() {
 export default function App() {
   const liteMode = useLiteMode();
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const [soundOn, setSoundOn] = useState(isSoundOn);
   const glowRef = useRef(null);
 
   // boot sequence: full counter on first visit, quick curtain fade after
@@ -90,9 +86,9 @@ export default function App() {
     };
   }, [liteMode, reducedMotion]);
 
-  // day/night tint: deeper night hours get a deeper wash
+  // the glow layer warms up toward the evening — golden hour on the page
   const hour = new Date().getHours();
-  const nightDepth = hour >= 22 || hour < 5 ? 0.35 : hour >= 18 ? 0.2 : 0.08;
+  const glowDepth = hour >= 22 || hour < 5 ? 0.5 : hour >= 18 ? 0.85 : 0.65;
 
   // inertia-smoothed scrolling — the page floats instead of jumping
   useEffect(() => {
@@ -112,58 +108,37 @@ export default function App() {
     return () => window.removeEventListener('pointermove', move);
   }, [liteMode]);
 
-  function toggleSound() {
-    const next = !soundOn;
-    setSound(next);
-    setSoundOn(next);
-  }
-
   return (
     <>
+      {/* the glow is weather behind the whole scene, so it paints first — the
+          canvas is transparent and sits on top of it */}
+      <div className="atmosphere" style={{ opacity: glowDepth }} aria-hidden="true" />
       <Suspense fallback={null}>
         <Scene liteMode={liteMode} reducedMotion={reducedMotion} />
       </Suspense>
       <FluidSea liteMode={liteMode} />
       <div className="grain" aria-hidden="true" />
-      <div className="night-tint" style={{ opacity: nightDepth }} aria-hidden="true" />
       <div className="vignette" aria-hidden="true" />
       {!liteMode && <div ref={glowRef} className="cursor-glow" aria-hidden="true" />}
       {!liteMode && <Cursor />}
       {!introDone && <Loader quick={seenIntro} onDone={onIntroDone} />}
 
+      {/* the corner the sound toggle used to hold: on a portfolio it should
+          carry the one thing a visitor might actually want */}
       {liteMode ? (
-        <button
-          className="sound-toggle glass"
-          onClick={toggleSound}
-          aria-pressed={soundOn}
-          title={soundOn ? 'sound on' : 'sound off'}
-        >
-          {soundOn ? '♪ on' : '♪ off'}
-        </button>
+        <a className="corner-cta glass" href={CONTACT.href}>{CONTACT.label}</a>
       ) : (
-        <Magnetic className="sound-toggle-magnet">
-          <button
-            className="sound-toggle glass"
-            onClick={toggleSound}
-            aria-pressed={soundOn}
-            title={soundOn ? 'sound on' : 'sound off'}
-          >
-            {soundOn ? '♪ on' : '♪ off'}
-          </button>
+        <Magnetic className="corner-cta-magnet">
+          <a className="corner-cta glass" href={CONTACT.href}>{CONTACT.label}</a>
         </Magnetic>
       )}
-
-      <CDPlayer />
 
       {!liteMode && <AnnotationRail />}
 
       <main className={liteMode ? '' : 'rail-on'}>
         <Hero reducedMotion={reducedMotion} liteMode={liteMode} play={introDone} />
         {MIDDLE_CHAPTERS.map(c => (
-          <Fragment key={c.id}>
-            <Chapter data={c} reducedMotion={reducedMotion} liteMode={liteMode} />
-            {c.id === 'builder' && <ScrollTicker reducedMotion={reducedMotion} />}
-          </Fragment>
+          <Chapter key={c.id} data={c} reducedMotion={reducedMotion} liteMode={liteMode} />
         ))}
         <Connect reducedMotion={reducedMotion} liteMode={liteMode} />
       </main>

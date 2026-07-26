@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { bus, readChapterCoord } from './scrollBus';
-import { orbStateAt, ID, RIM_OF, lerp } from './chapterMath';
+import { orbStateAt, ID, RIM_OF, lerp, smoothstep } from './chapterMath';
 import { orbVertex, orbFragment, glowVertex, glowFragment } from './orbShader';
 
 export default function Orb({ reducedMotion }) {
@@ -52,17 +52,19 @@ export default function Orb({ reducedMotion }) {
     []
   );
 
+  // On the pale build this plane is a contact shadow, not a halo: additive
+  // light over light paper only washes to milk. It paints a soft cool aura
+  // behind the sphere, so the object reads as sitting in a lit room.
   const glowMat = useMemo(
     () =>
       new THREE.ShaderMaterial({
         vertexShader: glowVertex,
         fragmentShader: glowFragment,
         uniforms: {
-          uColor: { value: new THREE.Color('#c9c3dd') },
+          uColor: { value: new THREE.Color('#6d7ba3') },
           uIntensity: { value: 0.55 },
         },
         transparent: true,
-        blending: THREE.AdditiveBlending,
         depthWrite: false,
       }),
     []
@@ -81,16 +83,29 @@ export default function Orb({ reducedMotion }) {
     // text, and rides higher where there is no free column at all
     const halfW = state.viewport.width / 2;
     const xf = Math.min(1, halfW / 4.4);
-    const sizeF = 0.55 + 0.45 * xf;
+    const sizeF = 0.34 + 0.66 * xf;
     const r = s.scale * sizeF;
     const edge = Math.max(halfW - r * 1.15, 0);
 
+    // Between the work chapter and the heap the path sweeps straight across the
+    // frame, over the experience panels. Two corrections, because the rule that
+    // nothing from the scene sits behind body copy has to hold mid-flight and
+    // not only at the chapter centres:
+    // 1. lift the path while it crosses
+    // 2. pen the orb into the left margin for as long as the panels are on
+    //    screen — they own the right of the frame for that whole stretch, not
+    //    just at the chapter's centre line
+    const cross = Math.min(Math.max(bus.u - 1, 0), 1);
+    const lift = 0.95 * Math.sin(Math.PI * cross);
+    const penned = smoothstep(0.72, 1.0, bus.u) * (1 - smoothstep(1.62, 1.98, bus.u));
+
+    let x = Math.sign(s.pos.x) * Math.min(Math.abs(s.pos.x), edge);
+    if (penned > 0) x = lerp(x, Math.min(x, -Math.min(2.5, edge)), penned);
+
     const m = mesh.current;
-    m.position.set(
-      Math.sign(s.pos.x) * Math.min(Math.abs(s.pos.x), edge),
-      s.pos.y + (1 - xf) * 0.6,
-      s.pos.z
-    );
+    // narrow screens have no free column, so the orb rides high in the frame
+    // where only the display type is — the copy below it stays clear
+    m.position.set(x, s.pos.y + lift + (1 - xf) * 1.9, s.pos.z);
     m.scale.setScalar(r);
 
     // scroll speed squashes the orb a touch, like it has mass
@@ -149,14 +164,13 @@ export default function Orb({ reducedMotion }) {
     rim.copy(RIM_OF[s.idA]).lerp(RIM_OF[s.idB], s.blend);
     orbMat.uniforms.uRim.value.copy(rim);
 
-    // halo tracks the orb
+    // the shadow sits behind the sphere and a touch below it, so depth testing
+    // clips it to a soft skirt around the silhouette instead of tinting the body
     const g = glow.current;
-    g.position.copy(m.position);
-    g.position.z += 0.01;
-    g.scale.setScalar(r * 2.5);
-    glowMat.uniforms.uColor.value.copy(rim);
+    g.position.set(m.position.x, m.position.y - r * 0.18, m.position.z - r - 0.05);
+    g.scale.setScalar(r * 2.6);
     glowMat.uniforms.uIntensity.value =
-      0.45 + 0.15 * s.w[ID.MOON] + 0.2 * s.w[ID.BALL] - 0.2 * s.w[ID.GRID];
+      0.3 + 0.08 * s.w[ID.MOON] + 0.12 * s.w[ID.BALL] - 0.06 * s.w[ID.GRID];
 
     bus.orb.x = m.position.x;
     bus.orb.y = m.position.y;

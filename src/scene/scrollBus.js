@@ -49,10 +49,7 @@ export function readChapterCoord() {
   for (const id of CHAPTER_IDS) {
     const el = document.getElementById(`ch-${id}`);
     if (!el) return bus.u; // DOM not ready — hold last value
-    // a pinned section reports its sticky frame, not its scroll length, so the
-    // orb holds that chapter's identity for as long as the frame holds the screen
-    const frame = el.querySelector('.rail-sticky') || el;
-    const r = frame.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
     centers.push(r.top + r.height / 2);
   }
   if (centerline <= centers[0]) return 0;

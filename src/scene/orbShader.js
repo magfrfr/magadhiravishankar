@@ -79,11 +79,13 @@ vec3 moonCol(vec3 p, vec3 n, vec3 v) {
 }
 
 // procedural studio the surface pretends to reflect: graded sky, a horizon
-// band and two softbox hot spots — the look of a cube-map with none of the cost
+// band and two softbox hot spots — the look of a cube-map with none of the cost.
+// Lit for the pale build: a bright room with a warm bounce off the floor, so
+// the dark glass body reads as glass rather than as a hole in the page.
 vec3 envCol(vec3 r) {
   float up = r.y * 0.5 + 0.5;
-  vec3 sky = mix(vec3(0.06, 0.07, 0.16), vec3(0.55, 0.60, 0.85), pow(up, 1.6));
-  sky += vec3(0.25, 0.20, 0.45) * exp(-abs(r.y) * 6.0) * 0.6;
+  vec3 sky = mix(vec3(0.58, 0.62, 0.78), vec3(0.94, 0.96, 1.0), pow(up, 1.3));
+  sky += vec3(0.38, 0.26, 0.16) * exp(-abs(r.y) * 5.0) * 0.7;
   float s1 = pow(max(dot(r, normalize(vec3(-0.6, 0.75, 0.3))), 0.0), 22.0);
   float s2 = pow(max(dot(r, normalize(vec3(0.7, 0.35, -0.4))), 0.0), 34.0);
   sky += vec3(1.0, 0.97, 0.92) * s1 * 1.6 + vec3(0.75, 0.80, 1.0) * s2 * 1.1;
@@ -117,8 +119,9 @@ vec3 gridCol(vec3 p) {
   float par = smoothstep(0.86, 0.98, gp);
   float lines = clamp(mer + par, 0.0, 1.0);
   vec3 body = vec3(0.05, 0.065, 0.135);
-  // dim lines on purpose: bloom used to blow this identity out over the entries
-  return body + vec3(0.50, 0.91, 0.87) * lines * 0.55;
+  // brighter than the dark build allowed: bloom no longer catches these lines
+  // at its raised threshold, so they have to carry themselves
+  return body + vec3(0.42, 0.88, 0.84) * lines * 0.8;
 }
 
 vec3 colorFor(float id, vec3 p, vec3 n, vec3 v) {
@@ -155,21 +158,25 @@ void main() {
 
   float fresnel = pow(1.0 - max(dot(n, v), 0.0), 2.4);
 
-  // faked studio reflection — strongest at grazing angles, like real glass
+  // faked studio reflection. Less grazing-biased than the dark build: a bright
+  // rim against bright paper eats the silhouette, so the reflection is spread
+  // across the body instead of piled onto the edge.
   vec3 R = reflect(-v, n);
-  col += envCol(R) * mix(0.14, 0.60, moonW) * (0.35 + 0.65 * fresnel);
+  col += envCol(R) * mix(0.14, 0.60, moonW) * (0.55 + 0.25 * fresnel);
 
   // thin-film iridescence: rainbow interference sliding with the view angle
   vec3 irid = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fresnel * 3.0 + uTime * 0.05));
-  col += irid * fresnel * mix(0.10, 0.55, moonW);
+  col += irid * fresnel * mix(0.08, 0.32, moonW);
 
   // wet-glass key light — the hotspot bloom finally has something to catch
   vec3 L = normalize(vec3(-0.45, 0.7, 0.55));
   float spec = pow(max(dot(n, normalize(L + v)), 0.0), mix(80.0, 110.0, moonW));
   col += vec3(1.0, 0.98, 0.95) * spec * mix(0.25, 1.6, moonW);
 
-  col += uRim * fresnel * 0.85;
-  col += uRim * vPoke * 0.55; // the poked patch glows toward the cursor
+  // restrained rim on the pale build: a bright edge against bright paper just
+  // dissolves the silhouette, which is the one thing the object needs
+  col += uRim * fresnel * 0.18;
+  col += uRim * vPoke * 0.3; // the poked patch glows toward the cursor
 
   // night-side shading so the sphere reads as a body, not a flat disc
   float shade = 0.72 + 0.28 * max(dot(n, normalize(vec3(-0.4, 0.5, 1.0))), 0.0);

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { buildSheet, FRAMES, FRAME_W, FRAME_H } from './sprites';
-import { play } from '../audio/sfx';
 
 const SCALE = 4.5; // 16x20 art → 72x90 on screen
 const PET_W = FRAME_W * SCALE;
@@ -62,7 +61,6 @@ export default function PetsLayer({ liteMode }) {
       b.dir = Math.sign(b.target - b.x) || 1;
       b.state = 'hop';
       b.stateT = 0;
-      play('hop');
     }
 
     function tick(now) {
@@ -146,7 +144,6 @@ export default function PetsLayer({ liteMode }) {
     lastInteraction.current = Date.now();
     b.state = 'happy';
     b.stateT = 0;
-    play('pet');
     const id = Math.random();
     setHearts(h => [...h, { id, x: e.clientX, y: e.clientY }]);
     setTimeout(() => setHearts(h => h.filter(x => x.id !== id)), 1100);
