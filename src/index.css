@@ -5,9 +5,11 @@
   /* pale studio: near-monochrome, 60/30/10 — periwinkle ground, ink type,
      one warm ember. Colour is meant to come from the objects in the scene,
      not from the type, which is why the accents are this restrained. */
-  --paper: #c9d2e7;     /* page ground — pale periwinkle */
-  --surface: #dce2f0;   /* elevated surface — a step lighter than the ground */
-  --tide: #0d5c63;      /* the line — deep teal, legible on pale */
+  --paper: #e7e1d3;     /* page ground — warm paper, a shade duller than the
+                           picture's own paper so the frame still reads */
+  --surface: #f0ebdf;   /* elevated surface — a step lighter than the ground */
+  --tide: #2440c9;      /* the line — the same blue the desk casts its shadows
+                           in, so type rules and the picture share one hue */
   --ember: #b4553a;     /* warm accent — burnt sodium */
   --ink: #06080f;       /* type — near-black, never flat black */
   --iris: #5b3fa0;      /* bunnies + retro artifacts */
@@ -37,7 +39,13 @@ html {
 }
 
 body {
-  background: var(--paper);
+  /* graph paper. The margin the picture gives up is not empty page, it is
+     the sheet the picture is lying on. */
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(6, 8, 15, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 8, 15, 0.05) 1px, transparent 1px);
+  background-size: 26px 26px;
   color: var(--ink);
   font-family: var(--font-story);
   overflow-x: hidden;

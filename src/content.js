@@ -3,9 +3,9 @@
 export const META = {
   name: 'magadhi.',
   fullName: 'Magadhi Ravishankar',
-  tagline: 'Biotech undergrad at the brain–machine edge. Chennai, always.',
+  tagline: 'Biotech undergrad at the brain-machine edge.',
   est: 'est. 17.01.06',
-  version: 'v6.0',
+  version: 'v7.0',
 };
 
 // Boot sequence copy. Plain on purpose: the loader is the first thing a
@@ -33,7 +33,7 @@ export const SOCIALS = [
 export const CHAPTERS = [
   {
     id: 'hero',
-    eyebrow: 'biotech · neuro-AI · chennai',
+    eyebrow: 'biotech · neuro-AI',
     title: null,
   },
   {

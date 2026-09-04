@@ -4,27 +4,28 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  clip-path: inset(var(--frame-t) var(--frame-r) var(--frame-b) var(--frame-l));
 }
 
-/* soft iridescent weather over the ground: two warm blooms and one cool one,
-   drifting. On a pale page this is what stops the background reading as flat
-   paper — the light has to come from somewhere. */
-.atmosphere {
+/* The picture window. DeskRig writes these every frame from the chapter
+   coordinate: the scene is seen through a rectangle that opens and closes, and
+   the side it gives up is where the chapter text sits. They MUST be declared
+   on :root and nowhere else — a copy on .scene-canvas would win over the
+   inherited value and freeze the frame at its default. */
+:root {
+  --frame-t: 30%;
+  --frame-r: 6%;
+  --frame-b: 6%;
+  --frame-l: 6%;
+}
+
+/* hairline around the window, so the picture reads as a picture */
+.scene-frame {
   position: fixed;
-  inset: 0;
-  z-index: 0; /* same layer as the canvas, painted before it */
+  inset: var(--frame-t) var(--frame-r) var(--frame-b) var(--frame-l);
+  z-index: 1;
   pointer-events: none;
-  background:
-    radial-gradient(38% 30% at 68% 16%, rgba(255, 214, 186, 0.85), transparent 70%),
-    radial-gradient(30% 26% at 22% 62%, rgba(255, 200, 214, 0.6), transparent 72%),
-    radial-gradient(46% 34% at 84% 78%, rgba(206, 214, 255, 0.7), transparent 74%);
-  animation: atmosphere-drift 28s ease-in-out infinite alternate;
-  transition: opacity 2s ease;
-}
-
-@keyframes atmosphere-drift {
-  from { transform: scale(1) translate(0, 0); }
-  to { transform: scale(1.12) translate(-2%, 1.5%); }
+  border: 1px solid rgba(11, 18, 48, 0.16);
 }
 
 .grain {
@@ -43,31 +44,6 @@
   50% { transform: translate(10px, -12px); }
   75% { transform: translate(-6px, -8px); }
   100% { transform: translate(0, 0); }
-}
-
-/* cinematic frame. On a pale ground the corners cool and deepen slightly
-   rather than going black — enough to hold the frame, not enough to read
-   as a dark border. */
-.vignette {
-  position: fixed;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  background: radial-gradient(ellipse 120% 100% at 50% 45%, transparent 58%, rgba(120, 138, 180, 0.28) 100%);
-}
-
-.cursor-glow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 180px;
-  height: 180px;
-  z-index: 3;
-  pointer-events: none;
-  border-radius: 50%;
-  /* a warm patch of light that follows the pointer. `screen` did this on the
-     dark build; over pale paper it has to lighten by painting, not blending. */
-  background: radial-gradient(circle, rgba(255, 226, 205, 0.55) 0%, transparent 62%);
 }
 
 /* ── boot loader ─────────────────────────────────────── */
@@ -228,51 +204,19 @@
 /* one frosted surface for the whole site: the scene canvas sits behind the
    content layer, so backdrop-filter really refracts the orb and the fluid.
    The rim is a conic gradient masked to a 1px ring — thin-film, not a border. */
+/* Flat chip. The frosted version was the orb build's language and read as a
+   third idiom beside a hard-edged picture: one rule, one fill, no blur. */
 .glass {
   position: relative;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background:
-    linear-gradient(142deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.28) 45%, rgba(214, 222, 245, 0.4));
-  backdrop-filter: blur(14px) saturate(1.35);
-  -webkit-backdrop-filter: blur(14px) saturate(1.35);
-  box-shadow:
-    inset 0 1px 0 var(--gloss),
-    0 18px 44px var(--shadow);
-  transition: box-shadow 0.35s ease, border-color 0.35s ease;
-}
-
-.glass::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(
-    from 210deg,
-    rgba(13, 92, 99, 0.55),
-    rgba(91, 63, 160, 0.45),
-    rgba(180, 85, 58, 0.4),
-    rgba(13, 92, 99, 0.55)
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  opacity: 0.35;
-  pointer-events: none;
-  transition: opacity 0.35s ease;
+  border-radius: 3px;
+  border: 1px solid rgba(6, 8, 15, 0.22);
+  background: transparent;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .glass:hover {
-  border-color: rgba(255, 255, 255, 0.85);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 24px 60px var(--shadow-deep);
-}
-
-.glass:hover::after {
-  opacity: 0.85;
+  border-color: var(--ink);
+  background: rgba(6, 8, 15, 0.05);
 }
 
 /* ── chrome ──────────────────────────────────────────── */
@@ -620,6 +564,30 @@ a.work-body:hover .work-arrow {
   color: var(--dim);
 }
 
+/* ── the picture window owns half the chapter ─────────────────
+   These paddings are the DOM half of FRAMES in deskPieces.js: the copy starts
+   where the window stops. If you move a frame rect, move its padding too or
+   the text lands back on the scene. */
+@media (min-width: 981px) {
+  .chapter--builder { padding-left: 50vw; padding-right: 6vw; }
+  .chapter--everything { padding-left: 6vw; padding-right: 50vw; }
+  .chapter--builder .chapter-inner,
+  .chapter--everything .chapter-inner { max-width: none; }
+
+  /* half a screen is not enough for three columns, so the work row takes the
+     same single-column reflow the phone build uses: metric first, then the
+     year, then the entry. Reads as an index rather than a table. */
+  .chapter--builder .work-body {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+    padding: 2.1rem 0 2.3rem;
+  }
+  .chapter--builder .work-when { padding-top: 0; order: -2; }
+  .chapter--builder .work-metric { text-align: left; order: -1; padding-top: 0; }
+  .chapter--builder .work-metric-value { font-size: 2.4rem; }
+  .chapter--builder .work-metric-label { margin-top: 0.2rem; }
+}
+
 /* ── per-chapter composition: break the left-column monotony ── */
 /* builder: block rides the right edge, title ranged right, globe holds the left */
 .chapter--builder {
@@ -725,11 +693,14 @@ a.work-body:hover .work-arrow {
 }
 
 /* ── hero ────────────────────────────────────────────── */
-/* the name is the floor of the frame, the glass bubble floats clear above it */
+/* the name is a headline in the top margin and the picture band hangs below
+   it. It used to sit across the middle of the scene, which is the single
+   worst thing you can do to both the type and the picture. */
 .chapter--hero {
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
-  padding-bottom: 9vh;
+  padding-top: 8vh;
+  padding-bottom: 0;
 }
 
 .hero-inner {
@@ -998,8 +969,6 @@ a.work-body:hover .work-arrow {
     margin-top: 0;
   }
 
-
-
   .chapter-body {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -1056,7 +1025,5 @@ a.work-body:hover .work-arrow {
   .site-footer {
     gap: 1.2rem;
   }
-
-
 
 }

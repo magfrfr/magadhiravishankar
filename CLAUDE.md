@@ -5,60 +5,78 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev       # Start dev server (Vite HMR) → http://localhost:5173
-npm run build     # Production build → dist/
+npm run dev       # Start dev server (Vite HMR) -> http://localhost:5173
+npm run build     # Production build -> dist/
 npm run preview   # Serve the production build locally
 npm run lint      # Run ESLint
-node scripts/shoot.mjs [stops]   # Headless Edge screenshots → .shots/ (e.g. `node scripts/shoot.mjs 0,0.5,1`)
+node scripts/shoot.mjs [stops]   # Headless Edge screenshots -> .shots/ (e.g. node scripts/shoot.mjs 0,0.5,1)
 ```
 
 No test suite is configured. Visual changes are verified with `scripts/shoot.mjs` (requires the dev server running); always LOOK at the screenshots before calling a visual change done.
 
-## Architecture (v6.0 — "a portfolio, with one object in it")
+**Do not verify by screenshotting a browser tab you are driving remotely.** A backgrounded Chrome tab gets `visibilityState: "hidden"` and fires zero `requestAnimationFrame` callbacks, so the scene, the camera rig and every framer-motion animation freeze at once and the page looks catastrophically broken when nothing is wrong. `shoot.mjs` is the reliable check.
 
-**Layout rule (v4.5, hers, non-negotiable):** nothing from the scene may sit behind **body** text. The orb takes the empty half of every chapter and the text takes the other; the ferrofluid band stays under the type. Orb anchors + per-chapter `SCALE_AT` in `chapterMath.js` exist to enforce that — if you move a text block, re-check the anchor and re-shoot. **Amended v5.0 (her call):** objects *may* cross the giant display words. They may not cross paragraphs, experience panels or links.
+## Architecture (v7.0, "the desk")
 
-The old known gap is **fixed** in v5.0. The rule now holds mid-transition too, via two corrections in `Orb.jsx` rather than a reshaped `ORB_PATH` (whose anchor array is length-coupled to `IDENTITY_AT`/`SCALE_AT`, so adding a point silently breaks `getPoint(u/last)`): a `lift` that raises the path while it sweeps between chapters, and a `penned` clamp that holds the orb in the left margin for as long as the experience panels are on screen, not only at that chapter's centre line.
+Single-page React 19 + Vite app. Entry: `src/main.jsx` -> `src/App.jsx`. **No StrictMode**, the custom rAF layers are simpler without dev double-mounting.
 
-Single-page React 19 + Vite app. Entry: `src/main.jsx` → `src/App.jsx`. **No StrictMode** — the custom rAF layers are simpler without dev double-mounting. A cinematic scroll story: one WebGL orb travels the page and changes identity per chapter — **moon → wireframe globe → tennis ball → moon** — while DOM text dissolves between chapters.
+**The premise.** Scrolling does not move an object down the page. It dollies a camera through one 3D desk, and the desk is seen through a **picture window** whose rectangle opens and closes as you go. The half the window gives up is exactly where that chapter's text sits, so the composition creates the text column instead of leaving dead space. Reference is illoca.unseen.co, which is not an illustration: it is a 3D scene wearing a two-tone posterised shader with ink edges and grain.
 
-**Content** — ALL copy lives in `src/content.js` (META, LOADER, CONTACT, SOCIALS, CHAPTERS, CATEGORIES, ITEMS, BUNNIES). No strings in components. Chapter order: `hero → builder → everything → connect` — the beach/Chennai chapter was CUT (v3.4, "emphasis on chennai is not really needed"); don't reintroduce Chennai content beyond the hero tagline.
-- `builder` is the portfolio proper. Each `experience[]` entry is `{ when, role, org, metric, metricLabel, points[], stack[], href? }`. **The metric is the thing a reader keeps, so it has to be real** — 68.3% cross-validated, Top 20 nationally, 150+ startups vetted. NO invented metrics. (The BCI number was 70.6%/75.5% until 2026-07-27, when a data leak was found in the pipeline: CSP had been fitted over the whole dataset before splitting. Do not restore the old figures.) An entry with no honest number does not get one.
-- `everything` is `range: true`: the thirteen things set as type, grouped by `CATEGORIES`.
-- Voice is plain. The old "signal acquired · 60 fps" / "acquiring signal" copy was cut in v6.0 — it read as a game, not a portfolio.
+**Layout rule (hers, non-negotiable):** nothing from the scene may sit behind **any** text, including the giant display words. The old v5.0 amendment that let objects cross display type is dead; her name across the desk was the single worst thing on the page. `FRAMES` in `deskPieces.js` and the chapter paddings in `App.css` are two halves of one decision. Move one and you must move the other.
 
-**Scene (`src/scene/`)** — lazy-loaded R3F `<Canvas>` fixed behind the DOM (`Scene.jsx`): Rig (cursor parallax), Stars, Orb and Grade (desktop, non-reduced-motion).
-- `scrollBus.js`: plain mutable object shared between DOM and frame loop — `bus.u` is the continuous chapter coordinate (0=hero … 3=connect), computed from live section rects. `CHAPTER_IDS` MUST match content.js ids — if they drift, `readChapterCoord` freezes and the whole scene goes dead. **Also home to the pure envelope math** (`smoothstep`, `lerp`, `seaWeight`, `riseWeight`) — it must stay three-free because DOM layers (FluidSea) import it; putting three-importing code here would drag three.js into the main bundle.
-- `chapterMath.js`: identity map, orb path (CatmullRom through per-chapter anchors), scales, rim colors; re-exports the scrollBus math. Arrays are length-coupled to the chapter count.
-- `Orb.jsx`: useFrame priority -1, publishes `bus.orb`; procedural identity crossfade in `orbShader.js` (no textures).
-- `environments/`: `Stars` only is mounted. `Sea/Stage/Court/Scalp` retired on disk (Stage/Court reference removed exports — re-wire before re-mounting).
+### Scene (`src/scene/`)
 
-**FluidSea (`src/components/FluidSea.jsx` + `Ferrofluid.jsx`)** — the site's water: ReactBits Ferrofluid (ogl, own small canvas, adapted: window-level pointermove since the layer is pointer-events none; `runningRef` skips rendering when invisible). Her params: flow up, shimmer 2, speed 0.3, glow 1.3, turbulence 0.25. Colors were hers (#2b2eba/#6366F1) until v5.0 deepened them for the pale build — see the palette section. One fixed layer at z-1: a bottom wave band during hero/connect (`seaWeight`), rising to fill the viewport behind the everything chapter (`riseWeight`, u≈2) via an animated CSS mask — no GL resize.
+Lazy-loaded R3F `<Canvas shadows>` fixed behind the DOM (`Scene.jsx`), which mounts only `DeskRig` and `Desk`.
 
-**Selected work (`src/components/WorkList.jsx`, v6.0)** — the builder chapter body and the professional core of the site. An editorial list, not cards: a hairline rule, the year on the left, role/org/points/stack in the middle, and the metric set large on the right. An entry with `href` renders as an `<a>` with an arrow that travels on hover; the hover state is the rule darkening and the row indenting, nothing lifts or glows. Motion is `whileInView` with `once: true`: rows rise and unblur in sequence, each rule draws in from the left. `reducedMotion` renders the same layout static.
+- **`scrollBus.js`** is a plain mutable object shared between the DOM and the frame loop. `bus.u` is the continuous chapter coordinate (0=hero to 3=connect) read from live section rects. `CHAPTER_IDS` MUST match the ids in `content.js`; if they drift, `readChapterCoord` freezes and the whole scene goes dead. **Must stay three-free**, because DOM layers import its envelope math and pulling three.js in here would drag it into the main bundle.
+- **`desk/deskPieces.js`** is the desk as data. Every piece is a primitive (`box`, `cyl`, `cone`); the look comes from shading and ink edges, not modelling. Per-piece flags: `t` albedo (0 dark object, 1 white paper), `e:false` to skip ink edges, `s:false` to stop casting a shadow, `d` the drawing kind, `dev` marks the one sheet that develops. Also holds `CAMERA_STOPS` and `FRAMES`, both length-coupled to the chapter count.
+- **`desk/deskMaterial.js`** is the three-band toon `ShaderMaterial` (`lights: true`, `getShadowMask()`), warm paper against saturated blue.
+- **`desk/deskDrawings.js`** generates seeded canvas textures for the sheets, sampled as an alpha mask. Kinds are `signal` (EEG channels whose noise falls away as the stage rises), `chart` and `notes`.
+- **`desk/Desk.jsx`** builds the group, adds `EdgesGeometry` ink lines per piece, and crossfades the developing sheet's stages in `useFrame`.
+- **`desk/DeskRig.jsx`** is the camera dolly along a CatmullRom through `CAMERA_STOPS`, and the only writer of `bus.u`, `bus.sceneReady` and the `--frame-*` CSS variables.
 
-**Range (`src/components/RangeList.jsx`, v6.0)** — the "all of it" body: the thirteen things as type, grouped by `CATEGORIES`, revealed in sequence on scroll. Hovering a word lifts its fact into **one** caption line rather than scattering thirteen tooltips. This replaced, in order, a physics pile, a card rail, a 3D voxel heap and a dome — see the memory file before proposing another one.
+**Parked, still on disk, NOT mounted:** `Orb.jsx`, `orbShader.js`, `chapterMath.js`, `environments/*`, `Grade.jsx` (bloom and DOF), and `components/FluidSea.jsx` plus `Ferrofluid.jsx` (commented out in `App.jsx`). They are the v6.0 orb build. Re-wire before re-mounting anything.
 
-**Glass system (v4.5)** — one `.glass` class in App.css (frosted background gradient + `backdrop-filter` over the WebGL canvas + a conic-gradient `::after` masked to a 1px iridescent ring). Applied to tags, socials and the corner link. Coarse pointers drop the blur and keep the look (mobile GPUs choke on stacked backdrop-filters over the canvas). `::after` is the rim.
+### Four things that will bite you
 
-**Seamless DOM** — Lenis smooth scroll (skipped in lite/reduced-motion); `chapters/useChapterFade.js` gives every chapter scroll-linked opacity/y/blur dissolves with long overlaps (blur skipped in lite); `components/AnnotationRail.jsx` is the fixed top-left mono line that scramble-rewrites per chapter (desktop replaces in-flow `.eyebrow` via `.rail-on`; lite mode shows in-flow eyebrows instead); `components/Magnetic.jsx` wraps the corner link + socials. `components/Loader.jsx` is the boot overlay: a counter that crawls to 88% and only sprints to 100 once `bus.sceneReady` (6s timeout as a backstop), drawn as an arc dial with a sweeping highlight, lifting off as a clip-path curtain. First visit only, tracked in localStorage `mg-intro`. The dial is styling — the crawl/hold/sprint timing and the `dt` clamps are the load-bearing part, don't restyle them away.
+1. **The vertex shader needs `beginnormal_vertex` and `defaultnormal_vertex`.** `shadowmap_vertex` reads `transformedNormal`; drop those chunks and the program fails to link.
+2. **`--frame-t/r/b/l` may only be declared on `:root`.** A copy of them on `.scene-canvas` beats the inherited value and silently freezes the window at its default.
+3. **Albedo is applied inside each band, never as a mix toward light afterwards.** The latter washes the whole scene to milk.
+4. **The back wall must not cast a shadow** (`s: false`) or it throws one across the entire desk and everything goes blue.
 
-**Badge reel (`components/BadgeReel.jsx`)** — the ID card (`/idcard.webp`) latched top-right on a verlet-rope cord; drag anywhere, spring snap-back with wobble. Pure rAF + refs, no physics lib.
+### Frame timing
 
-**Pets (`src/pets/`)** — two pixel bunnies (Ash brown, Kiko lavender). `sprites.js` holds string-grid frames (16×20×7) rendered to offscreen canvas; if you touch bunny art, rasterize and LOOK at it first (bunny ears must be long, narrow, separated). `PetsLayer.jsx` runs the hop/sleep/happy FSM; clicking pets them (hearts).
+`bus.u` equals `i` at chapter `i`'s centre line, so chapter `i` owns the screen for roughly `u` in `(i-0.5, i+0.5)`. The window must therefore HOLD its shape either side of a centre and swap across the MIDPOINT between two: `smoothstep(0.40, 0.70, u - i)`. Slower and it sweeps under arriving text; earlier and a chapter sits on top of the *next* chapter's window, which is worse. Re-shoot all four stops if you touch it.
 
-**Modes** — `liteMode` = coarse pointer or ≤768px (DPR 1, fewer particles, no Lenis/rail/magnetic/parallax). `prefers-reduced-motion` = no letter/fade animation, no camera parallax, no orb spin, and both scroll-reveal lists render in place.
+The camera also pans so the subject centres in the **visible** window rather than the canvas, which is why a shot framed for the full canvas arrives cropped at the half-width stops.
 
-**Lint note** — `react-hooks/purity` + `immutability` are off for `src/scene/**` only (R3F frame-loop mutation is idiomatic there); don't disable them elsewhere.
+## Content
 
-**Styling** — tokens in `src/index.css` ("pale studio": paper/surface/tide/ember/ink/iris, plus gloss/shadow/shadow-deep), layout in `src/App.css`. Fonts: Bricolage Grotesque (display), Newsreader (story), JetBrains Mono (annotations). Display type is set at **weight 400**, not 800 — the reference carries headlines by size alone, and `useWeightRipple` thins from 400 down to 200 to match.
+ALL copy lives in `src/content.js` (META, LOADER, CONTACT, SOCIALS, CHAPTERS, CATEGORIES, ITEMS, BUNNIES). No strings in components. Chapters: `hero -> builder -> everything -> connect`.
 
-**Palette flip (v5.0)** — the site was midnight-dark through v4.6 and is now pale periwinkle with ink type, her call after we studied noomoagency.com together. Things that invert and are easy to get wrong on this build:
-- **Additive light is useless on paper.** The orb's halo plane is a *contact shadow* now (normal blending, cool grey, parked behind and below the sphere so depth testing clips it to a skirt), not an additive glow. Bloom sits at threshold 0.9 / intensity 0.3 so it only catches true speculars; at the old 0.15 it turned the whole frame to milk.
-- **Bright rims dissolve silhouettes.** `orbShader` reflection is spread across the body (`0.55 + 0.25 * fresnel`) instead of piled on the edge, rim additive is down to 0.18, and `envCol` is lit as a bright room with a warm floor bounce so the dark glass body reads as glass rather than as a hole in the page.
-- **Text protection reverses.** Halo text-shadows are white here, not black.
-- **The ferrofluid was tuned to glow against midnight** and composited over paper as grey smears. Colours are deepened (`#1b1d8f`/`#3538c9`/`#4f46e5`), the layer carries `saturate(1.4) contrast(1.18)`, and the wave band sits lower (74–92%) so it clears the hero tagline.
-- `.atmosphere` (was `.night-tint`) is the warm iridescent glow weather. It paints **before** the canvas in `App.jsx` at the same z-index, so the transparent canvas sits on top of it — don't move it after `<Scene>` or it will wash out the orb and the fluid.
-- Depth of field is mounted ahead of Bloom in `Grade.jsx`, desktop-only like the rest of the composer. It is doing most of the work that reads as an expensive render.
+- **No Chennai anywhere**, in any form. It was cut from the tagline, the eyebrow and the meta description.
+- `builder` is the portfolio proper. Each `experience[]` entry is `{ when, role, org, metric, metricLabel, points[], stack[], href? }`. **The metric is the thing a reader keeps, so it has to be real**: 68.3% cross-validated, Top 20 nationally, 150+ startups vetted. NO invented metrics. `metric` is optional and an entry with no honest figure leaves the column empty. (The BCI number was 70.6%/75.5% until a data leak was found: CSP had been fitted over the whole dataset before splitting. Do not restore the old figures.)
+- `everything` is `range: true`, the thirteen things set as type and grouped by `CATEGORIES`.
+- Voice is plain. Em dashes are banned in her copy, so is the Oxford comma.
 
-**Pending assets** — real photos go in `public/photos/`; nothing renders them today, so the folder is unused until a chapter gets a `photos[]` again.
+## DOM
+
+- **`WorkList.jsx`** is selected work as an editorial hairline list: year left, role/org/points/stack middle, metric large right. In the half-width lane it takes the same single-column reflow the phone build uses, metric first.
+- **`RangeList.jsx`** is the thirteen things as grouped type with one shared caption line on hover. This replaced, in order, a physics pile, a card rail, a 3D voxel heap and a dome. Read the memory file before proposing another one.
+- **Chrome is flat.** `.glass` is a flat chip: 3px radius, one 1px ink rule, no blur. The frosted iridescent version, the `.atmosphere` glow blooms, `.vignette` and `.cursor-glow` were all deleted, because they were a soft-focus language fighting a hard-edged picture. Do not restore them without asking.
+- Lenis smooth scroll (skipped in lite and reduced-motion); `chapters/useChapterFade.js` gives scroll-linked dissolves; `AnnotationRail.jsx` is the fixed mono line that scramble-rewrites per chapter; `Magnetic.jsx` wraps the corner link and the socials; `Loader.jsx` is the boot overlay whose counter crawls to 88% until `bus.sceneReady` then sprints (the timing and the `dt` clamps are load-bearing, the dial is only styling); `Cursor.jsx` is desktop-only.
+- **Pets (`src/pets/`)** are two pixel bunnies, Ash and Kiko. Hers, explicitly kept, do not propose cutting them. If you touch bunny art, rasterize and LOOK at it: ears must be long, narrow and separated.
+
+## Modes
+
+`liteMode` is a coarse pointer or a viewport at or under 768px. `prefers-reduced-motion` drops letter animation, parallax and the scroll reveals.
+
+**There is no lite or mobile path for the desk yet.** The frame rects, the chapter paddings and the camera stops are all tuned for one desktop breakpoint. This is the biggest known gap.
+
+## Styling
+
+Tokens in `src/index.css`, layout in `src/App.css`. The ground is **warm paper** (`--paper: #e7e1d3`) carrying a 26px graph-paper grid, so the margin the picture gives up reads as the sheet the picture is lying on. `--tide` is the same blue the desk casts its shadows in, so type rules and the picture share one hue. This replaced the v5.0 pale-periwinkle palette on her call, deliberately.
+
+Fonts: Bricolage Grotesque (display, weight 400 not 800), Newsreader (story), JetBrains Mono (annotations).
+
+**Lint note:** `react-hooks/purity` and `immutability` are off for `src/scene/**` only. `react-hooks/refs` is NOT, so writing `ref.current` inside a `useMemo` will fail lint. Return the handle from the memo instead.

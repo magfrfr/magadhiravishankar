@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import Lenis from 'lenis';
 import './App.css';
 import { CHAPTERS, CONTACT } from './content';
@@ -11,7 +11,6 @@ import Chapter from './chapters/Chapter';
 import Connect from './chapters/Connect';
 import PetsLayer from './pets/PetsLayer';
 import AnnotationRail from './components/AnnotationRail';
-import FluidSea from './components/FluidSea';
 import Magnetic from './components/Magnetic';
 import Loader from './components/Loader';
 import Cursor from './components/Cursor';
@@ -36,7 +35,6 @@ function useLiteMode() {
 export default function App() {
   const liteMode = useLiteMode();
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const glowRef = useRef(null);
 
   // boot sequence: full counter on first visit, quick curtain fade after
   const [seenIntro] = useState(() => {
@@ -86,10 +84,6 @@ export default function App() {
     };
   }, [liteMode, reducedMotion]);
 
-  // the glow layer warms up toward the evening — golden hour on the page
-  const hour = new Date().getHours();
-  const glowDepth = hour >= 22 || hour < 5 ? 0.5 : hour >= 18 ? 0.85 : 0.65;
-
   // inertia-smoothed scrolling — the page floats instead of jumping
   useEffect(() => {
     if (liteMode || reducedMotion) return undefined;
@@ -97,29 +91,16 @@ export default function App() {
     return () => lenis.destroy();
   }, [liteMode, reducedMotion]);
 
-  // cursor glow (fine pointers only)
-  useEffect(() => {
-    if (liteMode) return undefined;
-    const el = glowRef.current;
-    const move = (e) => {
-      if (el) el.style.transform = `translate(${e.clientX - 90}px, ${e.clientY - 90}px)`;
-    };
-    window.addEventListener('pointermove', move, { passive: true });
-    return () => window.removeEventListener('pointermove', move);
-  }, [liteMode]);
-
   return (
     <>
-      {/* the glow is weather behind the whole scene, so it paints first — the
-          canvas is transparent and sits on top of it */}
-      <div className="atmosphere" style={{ opacity: glowDepth }} aria-hidden="true" />
       <Suspense fallback={null}>
         <Scene liteMode={liteMode} reducedMotion={reducedMotion} />
       </Suspense>
-      <FluidSea liteMode={liteMode} />
+      {/* the ferrofluid band was tuned to sit under an orb on paper; it fights
+          the desk. Parked while the scene direction is being judged:
+          <FluidSea liteMode={liteMode} /> */}
+      <div className="scene-frame" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
-      <div className="vignette" aria-hidden="true" />
-      {!liteMode && <div ref={glowRef} className="cursor-glow" aria-hidden="true" />}
       {!liteMode && <Cursor />}
       {!introDone && <Loader quick={seenIntro} onDone={onIntroDone} />}
 
