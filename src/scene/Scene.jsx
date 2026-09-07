@@ -4,7 +4,7 @@ import { bus } from './scrollBus';
 import Desk from './desk/Desk';
 import DeskRig from './desk/DeskRig';
 
-export default function Scene({ liteMode, reducedMotion }) {
+export default function Scene({ liteMode, reducedMotion, wide }) {
   const wrap = useRef(null);
 
   useEffect(() => {
@@ -35,8 +35,8 @@ export default function Scene({ liteMode, reducedMotion }) {
         dpr={liteMode ? 1 : [1, 1.75]}
         gl={{ antialias: !liteMode, alpha: true, powerPreference: 'high-performance' }}
       >
-        <DeskRig liteMode={liteMode} reducedMotion={reducedMotion} />
-        <Desk />
+        <DeskRig liteMode={liteMode} reducedMotion={reducedMotion} wide={wide} />
+        <Desk liteMode={liteMode} />
       </Canvas>
     </div>
   );

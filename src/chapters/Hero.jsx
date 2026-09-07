@@ -9,7 +9,7 @@ const EASE = [0.22, 0.61, 0.36, 1];
 const LETTER_HIDDEN = { opacity: 0, y: '0.55em', rotate: -7 };
 const LETTER_SHOWN = { opacity: 1, y: 0, rotate: 0 };
 
-export default function Hero({ reducedMotion, liteMode, play }) {
+export default function Hero({ reducedMotion, liteMode, wide, play }) {
   const ref = useRef(null);
   const nameRef = useRef(null);
   const style = useChapterFade(ref, reducedMotion, { lite: liteMode });
@@ -45,6 +45,7 @@ export default function Hero({ reducedMotion, liteMode, play }) {
         >
           {META.tagline}
         </motion.p>
+        {!wide && <div className="chapter-slot" aria-hidden="true" />}
         <motion.div
           className="hero-scroll-hint"
           initial={reducedMotion ? false : { opacity: 0 }}

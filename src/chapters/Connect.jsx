@@ -6,7 +6,7 @@ import Magnetic from '../components/Magnetic';
 
 const data = CHAPTERS[CHAPTERS.length - 1];
 
-export default function Connect({ reducedMotion, liteMode }) {
+export default function Connect({ reducedMotion, liteMode, wide }) {
   const ref = useRef(null);
   const style = useChapterFade(ref, reducedMotion, { fadeOut: false, lite: liteMode });
 
@@ -15,6 +15,7 @@ export default function Connect({ reducedMotion, liteMode }) {
       <motion.div className="chapter-inner" style={style}>
         <p className="eyebrow">{data.eyebrow}</p>
         <h2 className="chapter-title">{data.title}</h2>
+        {!wide && <div className="chapter-slot" aria-hidden="true" />}
         <p className="story-line">{data.lines[0]}</p>
 
         <ul className="socials">

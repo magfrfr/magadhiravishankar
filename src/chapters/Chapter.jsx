@@ -7,7 +7,7 @@ import RangeList from '../components/RangeList';
 import useChapterFade from './useChapterFade';
 import useWeightRipple from '../components/useWeightRipple';
 
-export default function Chapter({ data, reducedMotion, liteMode }) {
+export default function Chapter({ data, reducedMotion, liteMode, wide }) {
   const ref = useRef(null);
   const titleRef = useRef(null);
 
@@ -23,6 +23,8 @@ export default function Chapter({ data, reducedMotion, liteMode }) {
             {reducedMotion ? data.title : <BlurText text={data.title} animateBy="letters" delay={35} />}
           </h2>
         )}
+
+        {!wide && <div className="chapter-slot" aria-hidden="true" />}
 
         <div className="chapter-body">
           <div className="chapter-lines">

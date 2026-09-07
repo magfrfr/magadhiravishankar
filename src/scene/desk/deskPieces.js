@@ -90,3 +90,20 @@ export const FRAMES = [
   [0.55, 0.12, 0.42, 0.76],  // everything — right panel, the words take the left
   [0.12, 0.05, 0.76, 0.34],  // connect — a top band, the sign-off sits well under it
 ];
+
+// Below the split breakpoint there is no margin to give up: a phone chapter
+// runs three or four screens tall, so a window pinned to the viewport would
+// have the copy scrolling straight through it. The picture becomes a figure in
+// the flow instead, clipped to the `.chapter-slot` box, and these are the
+// shots framed for that box. Only the distance changes — the angles are the
+// ones from CAMERA_STOPS, so a phone sees the same four views of the desk.
+//
+// A shot is a world-space box the rig fits into whatever window it is handed,
+// which is why a portrait band gets a tighter crop instead of a pullback that
+// would leave the desk stranded in empty paper.
+export const LITE_SPANS = [
+  [13.5, 8.0],   // hero — the desk end to end, the wall standing behind it
+  [5.4, 5.4],    // builder — down onto the developing sheet
+  [4.6, 4.6],    // everything — across the mug, the books and the plant
+  [16.0, 8.5],   // connect — the long pull out, cropped off the empty foreground
+];

@@ -14,7 +14,7 @@ function geometryFor(piece) {
 
 // The ink lines are real edge geometry rather than a post pass: every piece is
 // a primitive, so EdgesGeometry lands a line exactly where the drawing would.
-export default function Desk() {
+export default function Desk({ liteMode }) {
   // one memo returns both the scene graph and a handle on the developing
   // sheet's material — a ref written during render trips react-hooks/refs
   const { group, dev } = useMemo(() => {
@@ -79,7 +79,7 @@ export default function Desk() {
         position={LIGHT_DIR.clone().multiplyScalar(24).toArray()}
         intensity={1}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={liteMode ? [1024, 1024] : [2048, 2048]}
         shadow-bias={-0.0012}
         shadow-camera-left={-16}
         shadow-camera-right={16}

@@ -26,6 +26,30 @@
   z-index: 1;
   pointer-events: none;
   border: 1px solid rgba(11, 18, 48, 0.16);
+  /* a window clipped to nothing would still draw its hairline as a rule
+     across the top or bottom edge of the screen */
+  opacity: var(--frame-op, 1);
+}
+
+/* The picture below the split breakpoint: a real box in the flow that the
+   rig clips the canvas to, instead of a fixed half of the screen. A phone
+   chapter runs several screens tall, so this is the only arrangement where
+   the copy cannot end up crossing the picture. Its height is the DOM half of
+   LITE_SPANS in deskPieces.js — change one and re-shoot the other. */
+.chapter-slot {
+  height: 42vh;
+  margin: 0.4rem 0 2.6rem;
+}
+
+/* the name sits above the hero picture, so it gets less room: at 42vh the
+   scroll hint falls below the fold on a phone */
+.chapter--hero .chapter-slot {
+  height: 32vh;
+  margin-bottom: 1.6rem;
+}
+
+.chapter--connect .chapter-slot {
+  height: 34vh;
 }
 
 .grain {
@@ -942,6 +966,17 @@ a.work-body:hover .work-arrow {
 @media (max-width: 820px) {
   .chapter {
     padding: 16vh 7vw 12vh; /* the top clears the fixed corner link */
+  }
+
+  /* the hero has to hold the name, the picture and the scroll hint in one
+     screen, so it runs tighter than the rest */
+  .chapter--hero {
+    padding-top: 11vh;
+    padding-bottom: 6vh;
+  }
+
+  .hero-scroll-hint {
+    margin-top: 1.8rem;
   }
 
   .chapter-title {

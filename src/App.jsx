@@ -19,21 +19,27 @@ const INTRO_KEY = 'mg-intro';
 
 const MIDDLE_CHAPTERS = CHAPTERS.slice(1, -1);
 
-function useLiteMode() {
-  const [lite, setLite] = useState(
-    () => window.matchMedia('(pointer: coarse), (max-width: 768px)').matches
-  );
+const LITE_QUERY = '(pointer: coarse), (max-width: 768px)';
+// the split breakpoint: at or above it the picture window takes half the
+// screen and the chapter text sits beside it. This MUST stay the same number
+// as the min-width block in App.css, which holds the other half of that
+// decision — the chapter paddings.
+const SPLIT_QUERY = '(min-width: 981px)';
+
+function useMedia(query) {
+  const [on, setOn] = useState(() => window.matchMedia(query).matches);
   useEffect(() => {
-    const mq = window.matchMedia('(pointer: coarse), (max-width: 768px)');
-    const fn = (e) => setLite(e.matches);
+    const mq = window.matchMedia(query);
+    const fn = (e) => setOn(e.matches);
     mq.addEventListener('change', fn);
     return () => mq.removeEventListener('change', fn);
-  }, []);
-  return lite;
+  }, [query]);
+  return on;
 }
 
 export default function App() {
-  const liteMode = useLiteMode();
+  const liteMode = useMedia(LITE_QUERY);
+  const wide = useMedia(SPLIT_QUERY);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // boot sequence: full counter on first visit, quick curtain fade after
@@ -94,7 +100,7 @@ export default function App() {
   return (
     <>
       <Suspense fallback={null}>
-        <Scene liteMode={liteMode} reducedMotion={reducedMotion} />
+        <Scene liteMode={liteMode} reducedMotion={reducedMotion} wide={wide} />
       </Suspense>
       {/* the ferrofluid band was tuned to sit under an orb on paper; it fights
           the desk. Parked while the scene direction is being judged:
@@ -117,11 +123,11 @@ export default function App() {
       {!liteMode && <AnnotationRail />}
 
       <main className={liteMode ? '' : 'rail-on'}>
-        <Hero reducedMotion={reducedMotion} liteMode={liteMode} play={introDone} />
+        <Hero reducedMotion={reducedMotion} liteMode={liteMode} wide={wide} play={introDone} />
         {MIDDLE_CHAPTERS.map(c => (
-          <Chapter key={c.id} data={c} reducedMotion={reducedMotion} liteMode={liteMode} />
+          <Chapter key={c.id} data={c} reducedMotion={reducedMotion} liteMode={liteMode} wide={wide} />
         ))}
-        <Connect reducedMotion={reducedMotion} liteMode={liteMode} />
+        <Connect reducedMotion={reducedMotion} liteMode={liteMode} wide={wide} />
       </main>
 
       <PetsLayer liteMode={liteMode} />

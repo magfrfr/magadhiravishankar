@@ -6,11 +6,17 @@ const stops = process.argv[2]
   ? process.argv[2].split(',').map(Number)
   : [0, 0.18, 0.38, 0.58, 0.78, 1.0];
 
+// second arg is the viewport, e.g. 390x844. Anything 768 or narrower is shot
+// with touch emulation so `pointer: coarse` matches and the page takes the
+// lite path, the same as a real phone.
+const [W, H] = (process.argv[3] || '1440x900').split('x').map(Number);
+const touch = W <= 768;
+
 const browser = await puppeteer.launch({
   executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   headless: 'new',
-  args: ['--use-angle=default', '--window-size=1440,900'],
-  defaultViewport: { width: 1440, height: 900 },
+  args: ['--use-angle=default', `--window-size=${W},${H}`],
+  defaultViewport: { width: W, height: H, hasTouch: touch, isMobile: touch },
 });
 const page = await browser.newPage();
 const errors = [];
@@ -26,7 +32,7 @@ const total = await page.evaluate(() => document.body.scrollHeight - window.inne
 for (let i = 0; i < stops.length; i++) {
   await page.evaluate((y) => window.scrollTo(0, y), Math.round(total * stops[i]));
   await new Promise((r) => setTimeout(r, 1600)); // let the eased chapter-coord settle
-  await page.screenshot({ path: `${OUT}/shot_${i}_${stops[i]}.png` });
+  await page.screenshot({ path: `${OUT}/shot_${W}_${i}_${stops[i]}.png` });
   console.log(`shot ${i} @ ${stops[i]}`);
 }
 
