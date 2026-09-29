@@ -16,7 +16,7 @@ No test suite is configured. Visual changes are verified with `scripts/shoot.mjs
 
 **Do not verify by screenshotting a browser tab you are driving remotely.** A backgrounded Chrome tab gets `visibilityState: "hidden"` and fires zero `requestAnimationFrame` callbacks, so the scene, the camera rig and every framer-motion animation freeze at once and the page looks catastrophically broken when nothing is wrong. `shoot.mjs` is the reliable check.
 
-## Architecture (v7.0, "the desk")
+## Architecture (v7.3, "the desk")
 
 Single-page React 19 + Vite app. Entry: `src/main.jsx` -> `src/App.jsx`. **No StrictMode**, the custom rAF layers are simpler without dev double-mounting.
 
@@ -49,11 +49,15 @@ Lazy-loaded R3F `<Canvas shadows>` fixed behind the DOM (`Scene.jsx`), which mou
 
 ### Frame timing
 
-`bus.u` equals `i` at chapter `i`'s centre line, so chapter `i` owns the screen for roughly `u` in `(i-0.5, i+0.5)`. The window must therefore HOLD its shape either side of a centre and swap across the MIDPOINT between two: `smoothstep(0.40, 0.70, u - i)`. Slower and it sweeps under arriving text; earlier and a chapter sits on top of the *next* chapter's window, which is worse. Re-shoot all four stops if you touch it.
+`bus.u` equals `i` at chapter `i`'s centre line, so chapter `i` owns the screen for roughly `u` in `(i-0.5, i+0.5)`. The window HOLDS its shape either side of a centre and swaps across a slot in between. **That slot is measured, not fixed** — `swapWindows()` in `scrollBus.js` reads the live page and centres each swap halfway between the point chapter `i`'s type clears the screen and the point chapter `i+1`'s first reaches it, one window per gap.
+
+It has to be per gap, because the chapters are nothing like each other in height (the work chapter is nearly three times the hero) and the single constant this replaced was 0.17 too late on the first gap and 0.15 too early on the last. The cost was not subtle: the entire work chapter arrived at **full opacity on top of the desk**, which is the one thing the layout rule forbids.
+
+`useChapterFade` reads the same windows and gates each chapter's opacity to zero across them, so no type is ever lit while the window is crossing the screen. **The gate and the swap are two halves of one decision; change one and you must change the other.** Gaps 2 and 3 have no text-free instant available at all (the outgoing chapter outlasts the arrival of the incoming one), so there the gate is what does the work. None of this applies below the breakpoint, where the picture is a box in the flow and cannot cross anything: the gate stays open and the old scroll-linked dissolve runs alone.
+
+**Verify with a scripted sweep, not by eye.** Walk the scroll in 0.01 steps, read `--frame-*` off `:root`, and intersect it with the client rect of every text node whose chapter is above ~0.03 opacity. It must print nothing. Screenshots at four stops will not catch this: all three overlaps sat between the stops.
 
 The camera also pans so the subject centres in the **visible** window rather than the canvas, which is why a shot framed for the full canvas arrives cropped at the half-width stops.
-
-None of this timing applies below the breakpoint: the lite window is a real box, so it simply moves with the page and swaps to the next chapter's box while both are off screen.
 
 ### Fitting the lite shots
 
@@ -63,19 +67,23 @@ The wide distances in `CAMERA_STOPS` are hand-tuned against the wide `FRAMES` an
 
 ## Content
 
-ALL copy lives in `src/content.js` (META, LOADER, CONTACT, SOCIALS, CHAPTERS, CATEGORIES, ITEMS, BUNNIES). No strings in components. Chapters: `hero -> builder -> everything -> connect`.
+ALL copy lives in `src/content.js` (META, LOADER, CONTACT, PROFILE, CV, SOCIALS, CHAPTERS, CATEGORIES, ITEMS, TOOLS, BUNNIES). No strings in components. Chapters: `hero -> builder -> everything -> connect`.
 
 - **No Chennai anywhere**, in any form. It was cut from the tagline, the eyebrow and the meta description.
 - `builder` is the portfolio proper. Each `experience[]` entry is `{ when, role, org, metric, metricLabel, points[], stack[], href? }`. **The metric is the thing a reader keeps, so it has to be real**: 68.3% cross-validated, Top 20 nationally, 150+ startups vetted. NO invented metrics. `metric` is optional and an entry with no honest figure leaves the column empty. (The BCI number was 70.6%/75.5% until a data leak was found: CSP had been fitted over the whole dataset before splitting. Do not restore the old figures.)
-- `everything` is `range: true`, the thirteen things set as type and grouped by `CATEGORIES`.
+- The BCI entry also carries `study`, a `{ label, rows[] }` case study rendered under the row. `the catch` row is the point of it: she found the CSP leak herself and the number went DOWN. Do not soften it and do not restore 75.5%.
+- `everything` is `range: true`, the thirteen things set as type and grouped by `CATEGORIES`. `builder` is `tools: true`, the skills band at its foot.
+- `PROFILE` and `CV` are the recruiter facts: degree, school, graduating mid-2027, open to a Jan - Jun 2027 research internship. **No CGPA on the site, her call.** `PROFILE.short` is the compressed hero version of the same three lines. `TOOLS` comes straight off her resume, nothing aspirational.
+- **The CV is `public/Magadhi-Ravishankar-CV.pdf`, a copy of `OneDrive/Desktop/Magadhi Ravishankar Resume.pdf`.** It is a copy, not a link, so refreshing the resume means copying it across again **and re-running `python scripts/strip-cv-phone.py`**, which takes her phone number off the contact line and re-sets that line centred without it. Her call, 2026-09-29: the number does not go on a public download. Email and LinkedIn stay.
 - Voice is plain. Em dashes are banned in her copy, so is the Oxford comma.
 
 ## DOM
 
 - **`WorkList.jsx`** is selected work as an editorial hairline list: year left, role/org/points/stack middle, metric large right. In the half-width lane it takes the same single-column reflow the phone build uses, metric first.
+- **`ToolBand.jsx`** is the skills band at the foot of the work chapter. It borrows RangeList's skeleton (mono label left, wrapped items right, one hairline per group) but sets the items small, so it reads as the spec under the work rather than a second headline list.
 - **`RangeList.jsx`** is the thirteen things as grouped type with one shared caption line on hover. This replaced, in order, a physics pile, a card rail, a 3D voxel heap and a dome. Read the memory file before proposing another one.
 - **`.chapter-slot`** is the empty box each chapter renders below the split breakpoint for the rig to clip the picture to. It carries no visuals of its own, only height.
-- **Chrome is flat.** `.glass` is a flat chip: 3px radius, one 1px ink rule, no blur. The frosted iridescent version, the `.atmosphere` glow blooms, `.vignette` and `.cursor-glow` were all deleted, because they were a soft-focus language fighting a hard-edged picture. Do not restore them without asking.
+- **Chrome is flat**, on phones too. `.glass` is a flat chip: 3px radius, one 1px ink rule, no blur. A `@media (pointer: coarse)` override was still painting the old frosted gradient on every chip below 768px long after v6.0 flattened them; it is gone. `.corner-cta` carries its own opaque `--surface` background instead, because it is fixed and every heading on the page eventually passes under it. The frosted iridescent version, the `.atmosphere` glow blooms, `.vignette` and `.cursor-glow` were all deleted, because they were a soft-focus language fighting a hard-edged picture. Do not restore them without asking.
 - Lenis smooth scroll (skipped in lite and reduced-motion); `chapters/useChapterFade.js` gives scroll-linked dissolves; `AnnotationRail.jsx` is the fixed mono line that scramble-rewrites per chapter; `Magnetic.jsx` wraps the corner link and the socials; `Loader.jsx` is the boot overlay whose counter crawls to 88% until `bus.sceneReady` then sprints (the timing and the `dt` clamps are load-bearing, the dial is only styling); `Cursor.jsx` is desktop-only.
 - **Pets (`src/pets/`)** are two pixel bunnies, Ash and Kiko. Hers, explicitly kept, do not propose cutting them. If you touch bunny art, rasterize and LOOK at it: ears must be long, narrow and separated.
 
@@ -84,6 +92,8 @@ ALL copy lives in `src/content.js` (META, LOADER, CONTACT, SOCIALS, CHAPTERS, CA
 `liteMode` is a coarse pointer or a viewport at or under 768px, and it governs cost: device pixel ratio 1, no antialias, a 1024 shadow map, no Lenis, no cursor and no rail. `wide` is a viewport at or over 981px and it governs **composition**: which of the two picture arrangements the page is in. They are separate on purpose. The band between 769 and 980px is a mouse-driven desktop window that still gets the in-flow picture, which is the arrangement that fits it.
 
 `prefers-reduced-motion` drops letter animation, parallax and the scroll reveals.
+
+**Connect is bottom-anchored**, so every row added to it climbs toward the picture above. Add anything there and re-shoot the last stop at 1440x900: the sign-off landing on the desk is the failure mode. The hero is the mirror of it, where the scroll hint is the thing that gets pushed onto the picture's top edge.
 
 ## Styling
 

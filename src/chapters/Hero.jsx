@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
-import { META, CHAPTERS } from '../content';
+import { META, CHAPTERS, PROFILE } from '../content';
 import useChapterFade from './useChapterFade';
 import useWeightRipple from '../components/useWeightRipple';
 
@@ -12,7 +12,7 @@ const LETTER_SHOWN = { opacity: 1, y: 0, rotate: 0 };
 export default function Hero({ reducedMotion, liteMode, wide, play }) {
   const ref = useRef(null);
   const nameRef = useRef(null);
-  const style = useChapterFade(ref, reducedMotion, { lite: liteMode });
+  const style = useChapterFade(ref, reducedMotion, { lite: liteMode, wide, index: 0 });
   useWeightRipple(nameRef, {
     enabled: !liteMode && !reducedMotion,
     selector: '.hero-letter',
@@ -44,6 +44,15 @@ export default function Hero({ reducedMotion, liteMode, wide, play }) {
           transition={{ delay: 0.8, duration: 1 }}
         >
           {META.tagline}
+        </motion.p>
+        {/* the first screen should answer "is she available" without a scroll */}
+        <motion.p
+          className="hero-meta"
+          initial={reducedMotion ? false : { opacity: 0 }}
+          animate={play ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ delay: 1.15, duration: 1 }}
+        >
+          {PROFILE.short}
         </motion.p>
         {!wide && <div className="chapter-slot" aria-hidden="true" />}
         <motion.div

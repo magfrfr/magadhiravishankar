@@ -1,7 +1,7 @@
 import { useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { bus, readChapterCoord, lerp, smoothstep } from '../scrollBus';
+import { bus, readChapterCoord, lerp, smoothstep, swapWindows } from '../scrollBus';
 import { CAMERA_STOPS, FRAMES, LITE_SPANS } from './deskPieces';
 
 const LAST = CAMERA_STOPS.length - 1;
@@ -21,10 +21,11 @@ function frameAt(u) {
   const i = Math.min(Math.floor(u), LAST - 1);
   // bus.u equals i at chapter i's centre line, so chapter i owns the screen
   // for roughly u in (i-0.5, i+0.5). The window therefore has to HOLD its
-  // shape either side of a centre and swap across the midpoint between two.
-  // Too slow and it sweeps under the arriving text; too early and a chapter
-  // sits on the next chapter's window, which is worse.
-  const t = smoothstep(0.40, 0.70, clamp(u - i, 0, 1));
+  // shape either side of a centre and swap across a slot in between. That slot
+  // is measured per gap rather than fixed, because the chapters are wildly
+  // different heights and one constant cannot suit all three: see swapWindows.
+  const [s0, s1] = swapWindows()[i];
+  const t = smoothstep(s0, s1, clamp(u - i, 0, 1));
   const a = FRAMES[i];
   const b = FRAMES[i + 1];
   return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t), lerp(a[3], b[3], t)];

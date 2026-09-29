@@ -5,7 +5,7 @@ export const META = {
   fullName: 'Magadhi Ravishankar',
   tagline: 'Biotech undergrad at the brain-machine edge.',
   est: 'est. 17.01.06',
-  version: 'v7.1',
+  version: 'v7.3',
 };
 
 // Boot sequence copy. Plain on purpose: the loader is the first thing a
@@ -21,8 +21,29 @@ export const CONTACT = {
   href: 'mailto:magadhi.rs@gmail.com',
 };
 
+// Who she is and when she is free. The one question a visitor scanning the
+// hero should be able to answer without scrolling: is she available, and when.
+// No CGPA here, by her call.
+export const PROFILE = {
+  degree: 'B.Tech Biotechnology',
+  school: 'Manipal University Jaipur',
+  graduating: 'graduating mid-2027',
+  availability: 'open to a research internship, Jan – Jun 2027',
+  // the compressed hero version of the three lines above
+  short: 'b.tech biotechnology · manipal university jaipur · free jan – jun 2027',
+};
+
+// The file lives in public/ and ships at the site root.
+export const CV = {
+  label: 'download CV',
+  href: '/Magadhi-Ravishankar-CV.pdf',
+  file: 'Magadhi-Ravishankar-CV.pdf',
+  note: 'pdf · 1 page',
+};
+
 export const SOCIALS = [
   { label: 'magadhiravishankar', href: 'https://www.linkedin.com/in/magadhiravishankar/', kind: 'LinkedIn' },
+  { label: 'magfrfr', href: 'https://github.com/magfrfr', kind: 'GitHub' },
   { label: '@magadhiii', href: 'https://www.instagram.com/magadhiii/', kind: 'Instagram' },
   { label: 'mww404', href: 'https://in.pinterest.com/mww404/', kind: 'Pinterest' },
   { label: 'magadhi.rs@gmail.com', href: 'mailto:magadhi.rs@gmail.com', kind: 'Email' },
@@ -57,6 +78,31 @@ export const CHAPTERS = [
         ],
         stack: ['Python', 'MNE', 'scikit-learn', 'CSP', 'SVM'],
         href: 'https://github.com/magfrfr/motor-imagery-bci',
+        // The lead entry gets the room a case study needs. `the catch` is the
+        // point of the whole block: she found the leak herself and the number
+        // on this site went DOWN because of it. Do not soften it, and do not
+        // restore the pre-leak 75.5%.
+        study: {
+          label: 'case study',
+          rows: [
+            {
+              k: 'data',
+              v: 'PhysioNet motor imagery. 224 trials from 5 subjects, 64 channels at 160 Hz.',
+            },
+            {
+              k: 'method',
+              v: '8–30 Hz mu/beta bandpass, CSP decomposition, bandpower features across C3, Cz and C4. LDA against SVM.',
+            },
+            {
+              k: 'the catch',
+              v: 'The first version scored 75.5%. CSP had been fitted over the whole dataset before the split, so the spatial filters had already seen the test trials. Refitting CSP inside every fold dropped it to 68.3%. That is the honest number and it is the one on this page.',
+            },
+            {
+              k: 'result',
+              v: '68.3% cross-validated against a 50% chance baseline. Leave-one-subject-out sits at 50.0%: the filters do not transfer to a head they were not fitted on, which is the open problem in the field rather than a bug in the pipeline.',
+            },
+          ],
+        },
       },
       {
         when: 'may – jun 2026',
@@ -92,6 +138,7 @@ export const CHAPTERS = [
         stack: ['Due diligence', 'Market research'],
       },
     ],
+    tools: true,
     tags: [],
     photos: [],
   },
@@ -126,7 +173,7 @@ export const CATEGORIES = [
 ];
 
 export const ITEMS = [
-  { id: 'ghungroo', name: 'bharatanatyam', fact: 'the rhythm is spoken first — tha ka dhi mi' },
+  { id: 'ghungroo', name: 'bharatanatyam', fact: 'the rhythm is spoken first, tha ka dhi mi' },
   { id: 'tanpura', name: 'carnatic singing', fact: 'same rhythm, sung' },
   { id: 'guitar', name: 'guitar', fact: 'a little, honestly' },
   { id: 'tennis', name: 'tennis', fact: 'played competitively' },
@@ -139,6 +186,26 @@ export const ITEMS = [
   { id: 'book', name: 'books', fact: 'reads everything' },
   { id: 'palette', name: 'art', fact: 'hands, not prompts' },
   { id: 'camera', name: 'photography', fact: 'usually of the sea' },
+];
+
+// The tools band at the foot of the work chapter. Straight off her resume, so
+// nothing here is aspirational.
+export const TOOLS = [
+  {
+    id: 'technical',
+    label: 'technical',
+    items: ['Python', 'MNE', 'scikit-learn', 'EEG signal processing', 'machine learning', 'JavaScript', 'React', 'Next.js', 'cell culture'],
+  },
+  {
+    id: 'strategy',
+    label: 'strategy',
+    items: ['customer strategy', 'go-to-market', 'investor reporting', 'pitch development', 'market research'],
+  },
+  {
+    id: 'languages',
+    label: 'languages',
+    items: ['English', 'Hindi', 'Tamil'],
+  },
 ];
 
 export const BUNNIES = {

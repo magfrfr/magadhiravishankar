@@ -74,6 +74,28 @@ export default function WorkList({ entries, reducedMotion }) {
                 {x.metricLabel && <span className="work-metric-label">{x.metricLabel}</span>}
               </span>
             </Row>
+
+            {/* the lead entry carries a case study. It sits OUTSIDE the row,
+                because the row is an anchor to the repo and this block holds
+                its own prose. */}
+            {x.study && (
+              <motion.div
+                className="study"
+                variants={ROW}
+                {...anim}
+                transition={{ delay: i * 0.08 + 0.1 }}
+              >
+                <span className="study-label">{x.study.label}</span>
+                <dl className="study-rows">
+                  {x.study.rows.map(r => (
+                    <div className="study-row" key={r.k}>
+                      <dt className="study-key">{r.k}</dt>
+                      <dd className="study-value">{r.v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </motion.div>
+            )}
           </li>
         );
       })}

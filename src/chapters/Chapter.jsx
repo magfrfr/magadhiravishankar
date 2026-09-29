@@ -4,14 +4,18 @@ import PhotoFrame from '../components/PhotoFrame';
 import BlurText from '../components/BlurText';
 import WorkList from '../components/WorkList';
 import RangeList from '../components/RangeList';
+import ToolBand from '../components/ToolBand';
 import useChapterFade from './useChapterFade';
+import { CHAPTER_IDS } from '../scene/scrollBus';
 import useWeightRipple from '../components/useWeightRipple';
 
 export default function Chapter({ data, reducedMotion, liteMode, wide }) {
   const ref = useRef(null);
   const titleRef = useRef(null);
 
-  const style = useChapterFade(ref, reducedMotion, { lite: liteMode });
+  const style = useChapterFade(ref, reducedMotion, {
+    lite: liteMode, wide, index: CHAPTER_IDS.indexOf(data.id),
+  });
   useWeightRipple(titleRef, { enabled: !liteMode && !reducedMotion });
 
   return (
@@ -35,6 +39,7 @@ export default function Chapter({ data, reducedMotion, liteMode, wide }) {
               <WorkList entries={data.experience} reducedMotion={reducedMotion} />
             )}
             {data.range && <RangeList reducedMotion={reducedMotion} />}
+            {data.tools && <ToolBand reducedMotion={reducedMotion} />}
             {data.tags?.length > 0 && (
               <div className="tags">
                 {data.tags.map(t => <span className="tag glass" key={t}>{t}</span>)}

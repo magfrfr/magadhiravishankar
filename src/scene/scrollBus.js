@@ -62,3 +62,65 @@ export function readChapterCoord() {
   }
   return bus.u;
 }
+
+// Half-width of a swap, in gap coordinates, and the length of the dissolve
+// that clears the type either side of one.
+export const SWAP_HALF = 0.09;
+export const SWAP_FADE = 0.07;
+
+const FALLBACK = CHAPTER_IDS.slice(0, -1).map(() => [0.40, 0.58]);
+const cache = { key: '', windows: FALLBACK };
+
+/**
+ * Where the picture window may swap from chapter i's shape to chapter i+1's,
+ * as a pair of `u - i` coordinates, one entry per gap.
+ *
+ * The window has to sweep across the screen to get from one side to the other,
+ * so it must do it while as little type is lit as possible. A single constant
+ * cannot manage that, because the gaps are nothing like each other — the work
+ * chapter is nearly three times the height of the hero — and one number put
+ * the swap far too late on the first gap: the whole work chapter arrived at
+ * full opacity while the window still wore the hero's shape, and the picture
+ * ran straight through it.
+ *
+ * So each swap is centred on a measurement of the live page, halfway between
+ * the point chapter i's type clears the screen and the point chapter i+1's
+ * type first reaches it. On the gaps where the outgoing chapter outlasts the
+ * arrival of the incoming one there is no clean instant at all, and that
+ * midpoint is simply the least-lit one; `useChapterFade` takes both ends of
+ * the type down around it.
+ *
+ * Measured off `offsetTop`/`offsetHeight`, never the client rect, because the
+ * dissolve puts a transform on the very element being measured.
+ */
+export function swapWindows() {
+  const key = `${window.innerWidth}x${window.innerHeight}x${document.body.scrollHeight}`;
+  if (key === cache.key) return cache.windows;
+
+  const vh = window.innerHeight;
+  const boxes = [];
+  for (const id of CHAPTER_IDS) {
+    const el = document.getElementById(`ch-${id}`);
+    const ink = el?.firstElementChild;
+    if (!ink) return cache.windows;
+    const r = el.getBoundingClientRect();
+    const top = r.top + (ink.offsetTop - el.offsetTop);
+    boxes.push({ centre: r.top + r.height / 2, inkTop: top, inkBottom: top + ink.offsetHeight });
+  }
+
+  const windows = [];
+  for (let i = 0; i < boxes.length - 1; i++) {
+    const gap = boxes[i + 1].centre - boxes[i].centre;
+    if (!(gap > 0)) return cache.windows;
+    const exit = (boxes[i].inkBottom - boxes[i].centre + vh / 2) / gap;
+    const enter = (boxes[i + 1].inkTop - boxes[i].centre - vh / 2) / gap;
+    // the upper clamp keeps the last swap clear of u = LAST, where the
+    // coordinate stops advancing and a chapter fading in would never arrive
+    const c = Math.min(Math.max((exit + enter) / 2, 0.18), 0.78);
+    windows.push([c - SWAP_HALF, c + SWAP_HALF]);
+  }
+
+  cache.key = key;
+  cache.windows = windows;
+  return windows;
+}
