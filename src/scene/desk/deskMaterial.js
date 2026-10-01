@@ -3,18 +3,20 @@ import { EMPTY_MAP } from './deskDrawings';
 
 // Two-tone posterised palette. The look is a shading model, not an
 // illustration: light faces go to paper, everything the light misses drops
-// straight to a saturated blue. Bands, never a gradient.
-// Warm paper against saturated blue. The picture is deliberately warmer than
-// the page it sits on, which is what makes the frame read as a window into
-// somewhere else rather than as a hole in the layout.
+// straight to a saturated burgundy. Bands, never a gradient.
+// Warm paper against saturated burgundy. The picture is deliberately warmer
+// than the page it sits on, which is what makes the frame read as a window
+// into somewhere else rather than as a hole in the layout.
+// These three are the site's colour: the scene is most of what a visitor
+// sees, so `shade` and `--tide` in index.css are one decision in two files.
 export const PAL = {
   light: new THREE.Color('#efe9db'),
   // warm grey, not blue-grey: the half-lit band is most of the desk, and a
   // cool mid dragged the whole surface toward grey
   mid:   new THREE.Color('#cdc6b6'),
-  shade: new THREE.Color('#2440c9'),
-  deep:  new THREE.Color('#16278a'),
-  ink:   new THREE.Color('#0b1230'),
+  shade: new THREE.Color('#8e2140'),
+  deep:  new THREE.Color('#5a1227'),
+  ink:   new THREE.Color('#2b0812'),
 };
 
 // Raking, from a window behind and to the left. Overhead puts every upward

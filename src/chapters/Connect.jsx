@@ -31,8 +31,8 @@ export default function Connect({ reducedMotion, liteMode, wide }) {
             <dd className="profile-value">{PROFILE.graduating}</dd>
           </div>
           <div className="profile-row">
-            <dt className="profile-key">free</dt>
-            <dd className="profile-value">{PROFILE.availability}</dd>
+            <dt className="profile-key">next</dt>
+            <dd className="profile-value">{PROFILE.nextUp}</dd>
           </div>
         </dl>
 

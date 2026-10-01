@@ -2,26 +2,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
-  /* pale studio: near-monochrome, 60/30/10 — periwinkle ground, ink type,
-     one warm ember. Colour is meant to come from the objects in the scene,
-     not from the type, which is why the accents are this restrained. */
+  /* warm studio: near-monochrome, 60/30/10 — paper ground, ink type, one
+     burgundy. Colour is meant to come from the objects in the scene, not from
+     the type, which is why the accents are this restrained.
+     Every accent here clears 4.5:1 on --paper. The palette this replaced did
+     not: --faint sat at 2.79:1 and --ember at 3.75:1, which is why the small
+     mono labels were unreadable. Check any new colour against the ground
+     before using it on type. */
   --paper: #e7e1d3;     /* page ground — warm paper, a shade duller than the
                            picture's own paper so the frame still reads */
   --surface: #f0ebdf;   /* elevated surface — a step lighter than the ground */
-  --tide: #2440c9;      /* the line — the same blue the desk casts its shadows
-                           in, so type rules and the picture share one hue */
-  --ember: #b4553a;     /* warm accent — burnt sodium */
+  --tide: #7c1a32;      /* the line — the same burgundy the desk casts its
+                           shadows in, so type rules and the picture share
+                           one hue. 7.85:1 */
+  --ember: #8d3328;     /* warm accent — brick, a lighter member of the same
+                           family rather than a second hue. 6.11:1 */
   --ink: #06080f;       /* type — near-black, never flat black */
-  --iris: #5b3fa0;      /* bunnies + retro artifacts */
-  --dim: rgba(6, 8, 15, 0.66);
-  --faint: rgba(6, 8, 15, 0.42);
+  --iris: #5b3fa0;      /* bunnies + retro artifacts — hers, not part of the
+                           palette and not to be folded into it */
+  --dim: rgba(6, 8, 15, 0.66);     /* 6.00:1 */
+  --faint: rgba(6, 8, 15, 0.58);   /* 4.59:1 — the floor for type */
   --line-rule: rgba(6, 8, 15, 0.14);
 
+  /* components, so an rgba() can be mixed from a token instead of hardcoding
+     one. Every literal that drifted out of sync with this palette did so
+     because it was spelled out by hand; three teal ones outlived the teal. */
+  --tide-rgb: 124 26 50;
+  --ember-rgb: 141 51 40;
+  --scene-ink-rgb: 43 8 18;
+
   /* highlight and shadow read opposite on a light ground: white is the
-     glass gloss, and shadows are cool rather than black */
+     glass gloss, and shadows carry the picture's own burgundy */
   --gloss: rgba(255, 255, 255, 0.7);
-  --shadow: rgba(40, 55, 95, 0.16);
-  --shadow-deep: rgba(40, 55, 95, 0.26);
+  --shadow: rgba(74, 34, 44, 0.16);
+  --shadow-deep: rgba(74, 34, 44, 0.26);
 
   --font-display: 'Bricolage Grotesque', sans-serif;
   --font-story: 'Newsreader', serif;

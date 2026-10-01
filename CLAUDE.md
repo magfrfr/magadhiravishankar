@@ -16,7 +16,7 @@ No test suite is configured. Visual changes are verified with `scripts/shoot.mjs
 
 **Do not verify by screenshotting a browser tab you are driving remotely.** A backgrounded Chrome tab gets `visibilityState: "hidden"` and fires zero `requestAnimationFrame` callbacks, so the scene, the camera rig and every framer-motion animation freeze at once and the page looks catastrophically broken when nothing is wrong. `shoot.mjs` is the reliable check.
 
-## Architecture (v7.3, "the desk")
+## Architecture (v7.4, "the desk")
 
 Single-page React 19 + Vite app. Entry: `src/main.jsx` -> `src/App.jsx`. **No StrictMode**, the custom rAF layers are simpler without dev double-mounting.
 
@@ -32,7 +32,7 @@ Lazy-loaded R3F `<Canvas shadows>` fixed behind the DOM (`Scene.jsx`), which mou
 
 - **`scrollBus.js`** is a plain mutable object shared between the DOM and the frame loop. `bus.u` is the continuous chapter coordinate (0=hero to 3=connect) read from live section rects. `CHAPTER_IDS` MUST match the ids in `content.js`; if they drift, `readChapterCoord` freezes and the whole scene goes dead. **Must stay three-free**, because DOM layers import its envelope math and pulling three.js in here would drag it into the main bundle.
 - **`desk/deskPieces.js`** is the desk as data. Every piece is a primitive (`box`, `cyl`, `cone`); the look comes from shading and ink edges, not modelling. Per-piece flags: `t` albedo (0 dark object, 1 white paper), `e:false` to skip ink edges, `s:false` to stop casting a shadow, `d` the drawing kind, `dev` marks the one sheet that develops. Also holds `CAMERA_STOPS`, `FRAMES` and `LITE_SPANS`, all three length-coupled to the chapter count.
-- **`desk/deskMaterial.js`** is the three-band toon `ShaderMaterial` (`lights: true`, `getShadowMask()`), warm paper against saturated blue.
+- **`desk/deskMaterial.js`** is the three-band toon `ShaderMaterial` (`lights: true`, `getShadowMask()`), warm paper against saturated burgundy. `PAL.shade` here and `--tide` in `index.css` are one decision in two files: the scene is most of what a visitor sees, so the page's colour is really this shader's.
 - **`desk/deskDrawings.js`** generates seeded canvas textures for the sheets, sampled as an alpha mask. Kinds are `signal` (EEG channels whose noise falls away as the stage rises), `chart` and `notes`.
 - **`desk/Desk.jsx`** builds the group, adds `EdgesGeometry` ink lines per piece, and crossfades the developing sheet's stages in `useFrame`.
 - **`desk/DeskRig.jsx`** is the camera dolly along a CatmullRom through `CAMERA_STOPS`, and the only writer of `bus.u`, `bus.sceneReady` and the `--frame-*` CSS variables. It takes the window either from `FRAMES` (wide) or from the picture slot nearest the viewport (lite).
@@ -93,11 +93,19 @@ ALL copy lives in `src/content.js` (META, LOADER, CONTACT, PROFILE, CV, SOCIALS,
 
 `prefers-reduced-motion` drops letter animation, parallax and the scroll reveals.
 
-**Connect is bottom-anchored**, so every row added to it climbs toward the picture above. Add anything there and re-shoot the last stop at 1440x900: the sign-off landing on the desk is the failure mode. The hero is the mirror of it, where the scroll hint is the thing that gets pushed onto the picture's top edge.
+**Connect is bottom-anchored**, so every row added to it climbs toward the picture above. The hero is the mirror of it, where the scroll hint gets pushed onto the picture's top edge.
+
+**Both ends are sized against the VIEWPORT HEIGHT, and that is the trap.** `FRAMES` puts the hero window at 46vh and the connect window's lower edge at 39vh, but type is a fixed pixel stack, so a short window shrinks the gap without shrinking the thing filling it. At 1536x864 — the commonest Windows laptop viewport — `say hi` sat 13px inside the picture and `scroll ↓` had zero clearance; at 1366x768 it was 68px. A window 900px tall is fine, which is exactly why shooting only 1440x900 missed it for two releases.
+
+So the display type and every vertical gap in those two chapters carry a vh term (`min(10vw, 9.8vh)`, `min(1.6rem, 2vh)`). **Never give either chapter a fixed-rem vertical gap, and never size `.chapter-title` or `.hero-name` on vw alone.** Verify by sweeping window sizes, not one size: 1920x1080 down to 990x700, checking each text rect against the live `--frame-*`. Everything from 1920x1080 to 990x700 currently clears, the tightest being 12px.
 
 ## Styling
 
-Tokens in `src/index.css`, layout in `src/App.css`. The ground is **warm paper** (`--paper: #e7e1d3`) carrying a 26px graph-paper grid, so the margin the picture gives up reads as the sheet the picture is lying on. `--tide` is the same blue the desk casts its shadows in, so type rules and the picture share one hue. This replaced the v5.0 pale-periwinkle palette on her call, deliberately.
+Tokens in `src/index.css`, layout in `src/App.css`. The ground is **warm paper** (`--paper: #e7e1d3`) carrying a 26px graph-paper grid, so the margin the picture gives up reads as the sheet the picture is lying on. `--tide` is the same burgundy the desk casts its shadows in, so type rules and the picture share one hue.
+
+**The palette is burgundy, hers, 2026-10-01** ("it looks like the default windows blue"). It replaced a royal blue, which had replaced a teal, which had replaced pale periwinkle. Each of those swaps left hardcoded `rgba()` behind — three teal literals were still in the loader and the work chips two palettes later. **So colour literals now come from `--tide-rgb` / `--ember-rgb` / `--scene-ink-rgb` via `rgb(var(--tide-rgb) / 0.22)`. Do not hand-write a colour in App.css.** `--iris` and the bunny sprites are outside the palette and stay whatever she made them.
+
+**Every accent on type must clear 4.5:1 against `--paper`, and this is checked, not eyeballed.** Two were failing for a long time and that is what "the readability is still an issue" meant: `--faint` at **2.79:1** (the eyebrow, scroll hint, hero meta, study keys, tools labels, footer) and `--ember` at **3.75:1**. They are now 4.59:1 and 6.11:1, `--dim` is 6.00:1 and `--tide` 7.85:1. The smallest mono labels also went from 0.58rem to 0.64rem, because 9px with 0.2em tracking is not a size, it is a texture.
 
 Fonts: Bricolage Grotesque (display, weight 400 not 800), Newsreader (story), JetBrains Mono (annotations).
 

@@ -25,7 +25,7 @@
   inset: var(--frame-t) var(--frame-r) var(--frame-b) var(--frame-l);
   z-index: 1;
   pointer-events: none;
-  border: 1px solid rgba(11, 18, 48, 0.16);
+  border: 1px solid rgb(var(--scene-ink-rgb) / 0.22);
   /* a window clipped to nothing would still draw its hairline as a rule
      across the top or bottom edge of the screen */
   opacity: var(--frame-op, 1);
@@ -130,14 +130,14 @@
 .loader-arc-fill {
   stroke: var(--tide);
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(13, 92, 99, 0.55));
+  filter: drop-shadow(0 0 6px rgb(var(--tide-rgb) / 0.55));
 }
 
 .loader-sweep {
   position: absolute;
   inset: 6px;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0 72%, rgba(13, 92, 99, 0.16) 88%, transparent);
+  background: conic-gradient(from 0deg, transparent 0 72%, rgb(var(--tide-rgb) / 0.16) 88%, transparent);
   animation: loader-sweep 1.6s linear infinite;
 }
 
@@ -350,7 +350,7 @@ main {
 .chapter-title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(3.4rem, 10vw, 7.6rem);
+  font-size: clamp(2.6rem, min(10vw, 9.8vh), 7.6rem);
   line-height: 0.95;
   letter-spacing: -0.015em;
   margin-bottom: 2.4rem;
@@ -499,10 +499,10 @@ a.work-body:hover .work-arrow {
 
 .work-chip {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--tide);
-  border: 1px solid rgba(13, 92, 99, 0.22);
+  border: 1px solid rgb(var(--tide-rgb) / 0.22);
   border-radius: 999px;
   padding: 4px 10px;
 }
@@ -526,7 +526,7 @@ a.work-body:hover .work-arrow {
 .work-metric-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   letter-spacing: 0.12em;
   color: var(--faint);
   margin-top: 0.5rem;
@@ -538,14 +538,14 @@ a.work-body:hover .work-arrow {
 .study {
   margin: 0 0 2.6rem;
   padding: 0 0 0 1.4rem;
-  border-left: 1px solid rgba(36, 64, 201, 0.28);
+  border-left: 1px solid rgb(var(--tide-rgb) / 0.28);
   max-width: 46em;
 }
 
 .study-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   letter-spacing: 0.2em;
   color: var(--ember);
   text-transform: lowercase;
@@ -734,11 +734,14 @@ a.work-body:hover .work-arrow {
 .chapter--connect {
   justify-content: center;
   align-items: flex-end;
-  padding-bottom: 5vh;
+  /* bottom-anchored, so this gap is the only one that pushes the whole stack
+     AWAY from the picture. It is in vh for the same reason everything else in
+     this chapter is: the frame above it is a fraction of the viewport. */
+  padding-bottom: 3.4vh;
 }
 
 .chapter--connect .chapter-title {
-  margin-bottom: 1.6rem;
+  margin-bottom: min(1.6rem, 2vh);
 }
 
 .chapter--connect .chapter-inner {
@@ -784,14 +787,14 @@ a.work-body:hover .work-arrow {
 
 .photo-placeholder {
   aspect-ratio: 4 / 5;
-  border: 1px dashed rgba(180, 85, 58, 0.4);
+  border: 1px dashed rgb(var(--ember-rgb) / 0.4);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
   background:
-    repeating-linear-gradient(45deg, transparent 0 10px, rgba(180, 85, 58, 0.04) 10px 20px);
+    repeating-linear-gradient(45deg, transparent 0 10px, rgb(var(--ember-rgb) / 0.06) 10px 20px);
 }
 
 .photo-placeholder-mark {
@@ -843,7 +846,7 @@ a.work-body:hover .work-arrow {
 .hero-name {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(4.8rem, 16vw, 13rem);
+  font-size: clamp(3.4rem, min(16vw, 19vh), 13rem);
   letter-spacing: -0.02em;
   line-height: 0.9;
   color: var(--ink);
@@ -856,16 +859,17 @@ a.work-body:hover .work-arrow {
   font-style: italic;
   font-size: clamp(1.05rem, 2.4vw, 1.5rem);
   color: var(--dim);
-  margin-top: 1.6rem;
+  margin-top: min(1.6rem, 2vh);
 }
 
-/* the availability line: mono and quiet, but on the first screen */
+/* who and where, mono and quiet, on the first screen. Not availability:
+   the hero does not advertise that, her call. */
 .hero-meta {
   font-family: var(--font-mono);
   font-size: 0.62rem;
   letter-spacing: 0.16em;
   color: var(--faint);
-  margin-top: 1.3rem;
+  margin-top: min(1.3rem, 1.7vh);
 }
 
 .hero-scroll-hint {
@@ -873,9 +877,9 @@ a.work-body:hover .work-arrow {
   font-size: 0.62rem;
   letter-spacing: 0.2em;
   color: var(--faint);
-  /* the availability line took the room this margin used to hold: any more
-     and the hint lands on the top edge of the picture */
-  margin-top: 2.6rem;
+  /* the hint is the last thing above the picture's top edge, so this gap is
+     the one that runs out first on a short window */
+  margin-top: min(3.2rem, 3.4vh);
   animation: hint-bob 2.4s ease-in-out infinite;
 }
 
@@ -887,7 +891,7 @@ a.work-body:hover .work-arrow {
 /* ── connect ─────────────────────────────────────────── */
 /* the three facts a recruiter is actually checking for */
 .profile {
-  margin-top: 1.6rem;
+  margin-top: min(1.6rem, 2vh);
   display: grid;
   grid-template-columns: auto auto;
   justify-content: center;
@@ -905,7 +909,7 @@ a.work-body:hover .work-arrow {
 .profile-key {
   text-align: right;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   letter-spacing: 0.18em;
   color: var(--ember);
   text-transform: lowercase;
@@ -922,7 +926,7 @@ a.work-body:hover .work-arrow {
   display: inline-flex;
   align-items: baseline;
   gap: 0.7rem;
-  margin-top: 1.2rem;
+  margin-top: min(1.2rem, 1.5vh);
   padding: 0.8rem 1.3rem;
   text-decoration: none;
   background: rgba(255, 255, 255, 0.55);
@@ -937,7 +941,7 @@ a.work-body:hover .work-arrow {
 
 .cv-note {
   font-family: var(--font-mono);
-  font-size: 0.56rem;
+  font-size: 0.64rem;
   letter-spacing: 0.14em;
   color: var(--faint);
 }
@@ -948,7 +952,7 @@ a.work-body:hover .work-arrow {
 
 .socials {
   list-style: none;
-  margin-top: 1.8rem;
+  margin-top: min(1.8rem, 2.2vh);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -980,7 +984,7 @@ a.work-body:hover .work-arrow {
 }
 
 .site-footer {
-  margin-top: 2rem;
+  margin-top: min(2rem, 2.5vh);
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -1147,7 +1151,7 @@ a.work-body:hover .work-arrow {
   }
 
   .corner-cta {
-    font-size: 0.56rem;
+    font-size: 0.6rem;
     padding: 7px 12px;
   }
 

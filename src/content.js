@@ -5,7 +5,7 @@ export const META = {
   fullName: 'Magadhi Ravishankar',
   tagline: 'Biotech undergrad at the brain-machine edge.',
   est: 'est. 17.01.06',
-  version: 'v7.3',
+  version: 'v7.4',
 };
 
 // Boot sequence copy. Plain on purpose: the loader is the first thing a
@@ -28,9 +28,14 @@ export const PROFILE = {
   degree: 'B.Tech Biotechnology',
   school: 'Manipal University Jaipur',
   graduating: 'graduating mid-2027',
-  availability: 'open to a research internship, Jan – Jun 2027',
-  // the compressed hero version of the three lines above
-  short: 'b.tech biotechnology · manipal university jaipur · free jan – jun 2027',
+  // Hers, 2026-10-01: the hero does not advertise availability, and nothing
+  // anywhere says she is "free". That reads as an unbooked freelancer, which
+  // is the opposite of what the rest of the page is doing. The dates survive
+  // on the contact screen as the practical fact a lab needs, phrased as the
+  // next thing she is doing rather than as a vacancy.
+  nextUp: 'research internship, Jan – Jun 2027',
+  // the compressed hero version: who and where, nothing about being available
+  short: 'b.tech biotechnology · manipal university jaipur',
 };
 
 // The file lives in public/ and ships at the site root.
