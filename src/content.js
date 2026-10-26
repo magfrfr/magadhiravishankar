@@ -5,7 +5,7 @@ export const META = {
   fullName: 'Magadhi Ravishankar',
   tagline: 'Biotech undergrad at the brain-machine edge.',
   est: 'est. 17.01.06',
-  version: 'v7.4',
+  version: 'v7.5',
 };
 
 // Boot sequence copy. Plain on purpose: the loader is the first thing a
@@ -160,7 +160,7 @@ export const CHAPTERS = [
   },
   {
     id: 'connect',
-    eyebrow: 'contact',
+    eyebrow: '',
     title: 'say hi',
     lines: [
       'Most useful where technical depth and real-world execution are the same job. If you’re building something real, say hi.',

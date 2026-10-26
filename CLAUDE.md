@@ -16,7 +16,7 @@ No test suite is configured. Visual changes are verified with `scripts/shoot.mjs
 
 **Do not verify by screenshotting a browser tab you are driving remotely.** A backgrounded Chrome tab gets `visibilityState: "hidden"` and fires zero `requestAnimationFrame` callbacks, so the scene, the camera rig and every framer-motion animation freeze at once and the page looks catastrophically broken when nothing is wrong. `shoot.mjs` is the reliable check.
 
-## Architecture (v7.4, "the desk")
+## Architecture (v7.5, "the desk")
 
 Single-page React 19 + Vite app. Entry: `src/main.jsx` -> `src/App.jsx`. **No StrictMode**, the custom rAF layers are simpler without dev double-mounting.
 
@@ -35,7 +35,7 @@ Lazy-loaded R3F `<Canvas shadows>` fixed behind the DOM (`Scene.jsx`), which mou
 - **`desk/deskMaterial.js`** is the three-band toon `ShaderMaterial` (`lights: true`, `getShadowMask()`), warm paper against saturated burgundy. `PAL.shade` here and `--tide` in `index.css` are one decision in two files: the scene is most of what a visitor sees, so the page's colour is really this shader's.
 - **`desk/deskDrawings.js`** generates seeded canvas textures for the sheets, sampled as an alpha mask. Kinds are `signal` (EEG channels whose noise falls away as the stage rises), `chart` and `notes`.
 - **`desk/Desk.jsx`** builds the group, adds `EdgesGeometry` ink lines per piece, and crossfades the developing sheet's stages in `useFrame`.
-- **`desk/DeskRig.jsx`** is the camera dolly along a CatmullRom through `CAMERA_STOPS`, and the only writer of `bus.u`, `bus.sceneReady` and the `--frame-*` CSS variables. It takes the window either from `FRAMES` (wide) or from the picture slot nearest the viewport (lite).
+- **`desk/DeskRig.jsx`** is the camera dolly along a CatmullRom through `CAMERA_STOPS`, and the only writer of `bus.u`, `bus.sceneReady` and the `--frame-*` CSS variables. It takes the window either from `FRAMES` (wide) or from the picture slot nearest the viewport (lite). On wide, `CHROME_PX` holds the window's top edge below the fixed rail and corner link, which are sized in pixels and so cannot be cleared by any vh number on a short window.
 
 **Parked, still on disk, NOT mounted:** `Orb.jsx`, `orbShader.js`, `chapterMath.js`, `environments/*`, `Grade.jsx` (bloom and DOF), and `components/FluidSea.jsx` plus `Ferrofluid.jsx` (commented out in `App.jsx`). They are the v6.0 orb build. Re-wire before re-mounting anything.
 

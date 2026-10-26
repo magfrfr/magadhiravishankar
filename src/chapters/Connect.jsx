@@ -16,7 +16,7 @@ export default function Connect({ reducedMotion, liteMode, wide }) {
   return (
     <section ref={ref} id={`ch-${data.id}`} className="chapter chapter--connect">
       <motion.div className="chapter-inner" style={style}>
-        <p className="eyebrow">{data.eyebrow}</p>
+        {data.eyebrow && <p className="eyebrow">{data.eyebrow}</p>}
         <h2 className="chapter-title">{data.title}</h2>
         {!wide && <div className="chapter-slot" aria-hidden="true" />}
         <p className="story-line">{data.lines[0]}</p>

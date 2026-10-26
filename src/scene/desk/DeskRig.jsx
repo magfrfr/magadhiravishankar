@@ -16,6 +16,17 @@ const TGT_PATH = new THREE.CatmullRomCurve3(
 const clamp = (x, a, b) => Math.min(Math.max(x, a), b);
 const pct = (x) => `${(clamp(x, 0, 1) * 100).toFixed(2)}%`;
 
+// The annotation rail and the corner link are FIXED chrome in the top strip,
+// and they are sized in pixels while FRAMES is in viewport fractions. The
+// connect window opens at 5vh, which is 54px on a 1080-tall window but only
+// 33px on a 660-tall one, so on a small window it climbs into them and the
+// picture ends up behind the chapter label. No vh number can prevent that,
+// because the chrome does not scale with the viewport. So the floor is in
+// pixels too: 51px is the measured bottom of the taller of the two, plus a
+// gutter. The window loses height off its top and keeps its bottom edge, so
+// the composition shifts rather than stretching.
+const CHROME_PX = 64;
+
 /** Picture window at chapter coordinate u, as viewport fractions [x,y,w,h]. */
 function frameAt(u) {
   const i = Math.min(Math.floor(u), LAST - 1);
@@ -98,6 +109,12 @@ export default function DeskRig({ liteMode, reducedMotion, wide }) {
     let fx, fy, fw, fh;
     if (wide || slots.length === 0) {
       [fx, fy, fw, fh] = frameAt(u);
+      // hold the window below the fixed chrome, keeping its bottom edge
+      const floor = CHROME_PX / window.innerHeight;
+      if (fy < floor) {
+        fh = Math.max(fy + fh - floor, 0.05);
+        fy = floor;
+      }
     } else {
       slot.current = pickSlot(slots, slot.current);
       const r = slots[slot.current].getBoundingClientRect();
