@@ -1,13 +1,15 @@
 /* ── fixed atmosphere layers ─────────────────────────── */
+/* No clip: the field shader fades itself to zero at the window's edges, so
+   the window has a soft edge instead of a hard box and still never reaches
+   the type. */
 .scene-canvas {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
-  clip-path: inset(var(--frame-t) var(--frame-r) var(--frame-b) var(--frame-l));
 }
 
-/* The picture window. DeskRig writes these every frame from the chapter
+/* The picture window. FieldRig writes these every frame from the chapter
    coordinate: the scene is seen through a rectangle that opens and closes, and
    the side it gives up is where the chapter text sits. They MUST be declared
    on :root and nowhere else — a copy on .scene-canvas would win over the
@@ -19,23 +21,21 @@
   --frame-l: 6%;
 }
 
-/* hairline around the window, so the picture reads as a picture */
+/* the light the field gives off, painted behind it. closest-side keeps the
+   glow inside the window, so it reaches the edge already at zero */
 .scene-frame {
   position: fixed;
   inset: var(--frame-t) var(--frame-r) var(--frame-b) var(--frame-l);
-  z-index: 1;
+  z-index: 0;
   pointer-events: none;
-  border: 1px solid rgb(var(--scene-ink-rgb) / 0.22);
-  /* a window clipped to nothing would still draw its hairline as a rule
-     across the top or bottom edge of the screen */
+  background: radial-gradient(closest-side, rgb(var(--tide-rgb) / 0.13), rgb(var(--cool-rgb) / 0.06) 55%, transparent);
   opacity: var(--frame-op, 1);
 }
 
 /* The picture below the split breakpoint: a real box in the flow that the
-   rig clips the canvas to, instead of a fixed half of the screen. A phone
+   rig fits the field to, instead of a fixed half of the screen. A phone
    chapter runs several screens tall, so this is the only arrangement where
-   the copy cannot end up crossing the picture. Its height is the DOM half of
-   LITE_SPANS in deskPieces.js — change one and re-shoot the other. */
+   the copy cannot end up crossing the picture. */
 .chapter-slot {
   height: 42vh;
   margin: 0.4rem 0 2.6rem;
@@ -204,7 +204,7 @@
   width: 34px;
   height: 34px;
   margin: -17px 0 0 -17px;
-  border: 1px solid rgba(6, 8, 15, 0.5);
+  border: 1px solid rgb(var(--ink-rgb) / 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,14 +233,14 @@
 .glass {
   position: relative;
   border-radius: 3px;
-  border: 1px solid rgba(6, 8, 15, 0.22);
+  border: 1px solid rgb(var(--ink-rgb) / 0.16);
   background: transparent;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .glass:hover {
-  border-color: var(--ink);
-  background: rgba(6, 8, 15, 0.05);
+  border-color: rgb(var(--tide-rgb) / 0.7);
+  background: rgb(var(--tide-rgb) / 0.08);
 }
 
 /* ── chrome ──────────────────────────────────────────── */
@@ -281,7 +281,7 @@
   color: var(--tide);
   border: 1px solid var(--line-rule);
   padding: 2px 7px;
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--surface);
 }
 
 .rail-text {
@@ -345,14 +345,14 @@ main {
   margin-bottom: 1.1rem;
 }
 
-/* set at regular weight, not black: the reference carries display type by size
-   alone, and a fat grotesque at this scale reads as a poster, not a page */
+/* medium weight, tracked tight: a modern grotesque carries display type by
+   density, not by bulk */
 .chapter-title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(2.6rem, min(10vw, 9.8vh), 7.6rem);
   line-height: 0.95;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.05em;
   margin-bottom: 2.4rem;
   color: var(--ink);
 }
@@ -389,7 +389,8 @@ main {
 
 .story-line:first-child {
   font-size: 1.45rem;
-  font-style: italic;
+  line-height: 1.5;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
 
@@ -434,7 +435,7 @@ a.work-body:hover {
 }
 
 .work-row:has(a.work-body:hover) .work-rule {
-  background: rgba(6, 8, 15, 0.4);
+  background: rgb(var(--tide-rgb) / 0.7);
 }
 
 .work-when {
@@ -452,9 +453,9 @@ a.work-body:hover {
 .work-role {
   display: block;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(1.6rem, 3.1vw, 2.5rem);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
   line-height: 1.08;
   color: var(--ink);
 }
@@ -475,7 +476,6 @@ a.work-body:hover .work-arrow {
 .work-org {
   display: block;
   font-family: var(--font-story);
-  font-style: italic;
   font-size: 1.05rem;
   color: var(--dim);
   margin: 0.3rem 0 1rem;
@@ -518,9 +518,10 @@ a.work-body:hover .work-arrow {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(1.9rem, 3.4vw, 2.8rem);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--ink);
+  color: var(--tide);
+  text-shadow: 0 0 28px rgb(var(--tide-rgb) / 0.35);
 }
 
 .work-metric-label {
@@ -651,9 +652,9 @@ a.work-body:hover .work-arrow {
   /* a name breaking across two lines reads as two of the thirteen things */
   white-space: nowrap;
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(1.35rem, 2.5vw, 2rem);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.035em;
   line-height: 1.25;
   color: var(--faint);
   cursor: default;
@@ -661,12 +662,11 @@ a.work-body:hover .work-arrow {
 }
 
 .range-word--on {
-  color: var(--ink);
+  color: var(--tide);
 }
 
 .range-fact {
   font-family: var(--font-story);
-  font-style: italic;
   font-size: 1.1rem;
   color: var(--faint);
   margin-top: 2rem;
@@ -740,6 +740,12 @@ a.work-body:hover .work-arrow {
   padding-bottom: 3.4vh;
 }
 
+/* a short window has the least room between the band and the sign-off, and
+   the footer can sit closer to the screen edge to buy it */
+@media (max-height: 700px) {
+  .chapter--connect { padding-bottom: 1vh; }
+}
+
 .chapter--connect .chapter-title {
   margin-bottom: min(1.6rem, 2vh);
 }
@@ -752,16 +758,13 @@ a.work-body:hover .work-arrow {
   transform-origin: center;
 }
 
+/* bottom-anchored, so every line of leading here pushes "say hi" up into the
+   window on a short screen */
 .chapter--connect .story-line {
   margin-inline: auto;
   color: var(--ink);
-  /* the halo protects ink type where the scene passes close — white on the
-     light build, where the dark build needed black */
-  text-shadow: 0 1px 18px rgba(255, 255, 255, 0.95), 0 0 6px rgba(255, 255, 255, 0.85);
-}
-
-.chapter--connect .chapter-title {
-  text-shadow: 0 2px 26px rgba(255, 255, 255, 0.8);
+  line-height: 1.45;
+  margin-bottom: min(0.7rem, 1vh);
 }
 
 /* ── media column ────────────────────────────────────── */
@@ -845,19 +848,23 @@ a.work-body:hover .work-arrow {
 
 .hero-name {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   font-size: clamp(3.4rem, min(16vw, 19vh), 13rem);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.065em;
   line-height: 0.9;
   color: var(--ink);
-  /* no glow on the light build: a soft dark halo behind black type only
-     muddies it. The name holds the frame by size and contrast alone. */
+}
+
+/* the full stop is the accent: one rose mark on the first screen */
+.hero-letter:last-child {
+  color: var(--tide);
+  text-shadow: 0 0 40px rgb(var(--tide-rgb) / 0.6);
 }
 
 .hero-tagline {
   font-family: var(--font-story);
-  font-style: italic;
   font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+  letter-spacing: -0.015em;
   color: var(--dim);
   margin-top: min(1.6rem, 2vh);
 }
@@ -919,7 +926,6 @@ a.work-body:hover .work-arrow {
   font-family: var(--font-story);
   font-size: 1rem;
   color: var(--ink);
-  text-shadow: 0 1px 14px rgba(255, 255, 255, 0.9);
 }
 
 .cv {
@@ -929,7 +935,7 @@ a.work-body:hover .work-arrow {
   margin-top: min(1.2rem, 1.5vh);
   padding: 0.8rem 1.3rem;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--surface);
 }
 
 .cv-label {
@@ -956,7 +962,9 @@ a.work-body:hover .work-arrow {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.8rem 1.6rem;
+  /* tight enough that all five hold one row down to the breakpoint: a second
+     row is a whole pill's height pushing "say hi" into the window */
+  gap: 0.8rem 1rem;
 }
 
 .socials a {
@@ -965,7 +973,7 @@ a.work-body:hover .work-arrow {
   align-items: center;
   gap: 0.35rem;
   text-decoration: none;
-  padding: 0.85rem 1.4rem;
+  padding: 0.85rem 1.1rem;
   border-radius: 14px;
 }
 
@@ -1105,8 +1113,8 @@ a.work-body:hover .work-arrow {
   font-size: 0.6rem;
   letter-spacing: 0.1em;
   color: var(--iris);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(91, 63, 160, 0.35);
+  background: var(--surface);
+  border: 1px solid rgb(var(--ink-rgb) / 0.16);
   padding: 3px 8px;
   pointer-events: none;
   white-space: nowrap;

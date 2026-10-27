@@ -29,6 +29,8 @@ export const bus = {
   mouse: { x: 0, y: 0 },     // NDC, -1..1
   mouseActive: false,        // a fine pointer has actually moved (gates orb poke)
   mouseEnergy: 0,            // decays; excites the sea
+  // where the particle field sits, written by FieldRig, read by Field
+  field: { x: 0, y: 0, scale: 1, seg: 0, morph: 0, rect: [0, 0, 0, 0] },
   orb: {
     x: 0, y: 0, z: 0,
     scale: 1,

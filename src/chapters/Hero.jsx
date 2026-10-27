@@ -16,6 +16,7 @@ export default function Hero({ reducedMotion, liteMode, wide, play }) {
   useWeightRipple(nameRef, {
     enabled: !liteMode && !reducedMotion,
     selector: '.hero-letter',
+    base: 600,
   });
 
   return (

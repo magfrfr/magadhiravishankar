@@ -1,45 +1,35 @@
-/* Bricolage ships as a variable range (200..800) so letter weights can ripple under the cursor */
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+/* Geist ships as a variable range (100..900) so letter weights can ripple under the cursor */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@300..600&display=swap');
 
 :root {
-  /* warm studio: near-monochrome, 60/30/10 — paper ground, ink type, one
-     burgundy. Colour is meant to come from the objects in the scene, not from
-     the type, which is why the accents are this restrained.
-     Every accent here clears 4.5:1 on --paper. The palette this replaced did
-     not: --faint sat at 2.79:1 and --ember at 3.75:1, which is why the small
-     mono labels were unreadable. Check any new colour against the ground
-     before using it on type. */
-  --paper: #e7e1d3;     /* page ground — warm paper, a shade duller than the
-                           picture's own paper so the frame still reads */
-  --surface: #f0ebdf;   /* elevated surface — a step lighter than the ground */
-  --tide: #7c1a32;      /* the line — the same burgundy the desk casts its
-                           shadows in, so type rules and the picture share
-                           one hue. 7.85:1 */
-  --ember: #8d3328;     /* warm accent — brick, a lighter member of the same
-                           family rather than a second hue. 6.11:1 */
-  --ink: #06080f;       /* type — near-black, never flat black */
-  --iris: #5b3fa0;      /* bunnies + retro artifacts — hers, not part of the
-                           palette and not to be folded into it */
-  --dim: rgba(6, 8, 15, 0.66);     /* 6.00:1 */
-  --faint: rgba(6, 8, 15, 0.58);   /* 4.59:1 — the floor for type */
-  --line-rule: rgba(6, 8, 15, 0.14);
+  /* night studio: near-black ground, bone-white type, one rose accent with a
+     violet shadow behind it in the field. 60/30/10 — black, white, rose.
+     The rose is the burgundy brought up to a brightness that holds on dark.
+     Every colour used on type clears 4.5:1 on --paper, checked by script, not
+     by eye: --tide 6.22, --ember 8.94, --dim 8.67, --faint 5.12, --ink 17.6. */
+  --paper: #08080b;     /* page ground — kept the old name, it is night now */
+  --surface: #131318;   /* elevated surface — chips and the corner link */
+  --tide: #ff4d6d;      /* the accent, and the core colour of the field */
+  --ember: #ff8a9e;     /* lighter member of the same family, for labels */
+  --ink: #f2f0ec;       /* type — bone white, never flat white */
+  --iris: #b7a3ff;      /* bunnies — hers, not part of the palette */
+  --dim: rgba(242, 240, 236, 0.7);
+  --faint: rgba(242, 240, 236, 0.52); /* the floor for type */
+  --line-rule: rgba(242, 240, 236, 0.12);
 
   /* components, so an rgba() can be mixed from a token instead of hardcoding
-     one. Every literal that drifted out of sync with this palette did so
-     because it was spelled out by hand; three teal ones outlived the teal. */
-  --tide-rgb: 124 26 50;
-  --ember-rgb: 141 51 40;
-  --scene-ink-rgb: 43 8 18;
+     one. Every literal that drifted out of sync with a palette did so because
+     it was spelled out by hand. */
+  --tide-rgb: 255 77 109;
+  --ember-rgb: 255 138 158;
+  --ink-rgb: 242 240 236;
+  --cool-rgb: 107 77 255;
 
-  /* highlight and shadow read opposite on a light ground: white is the
-     glass gloss, and shadows carry the picture's own burgundy */
-  --gloss: rgba(255, 255, 255, 0.7);
-  --shadow: rgba(74, 34, 44, 0.16);
-  --shadow-deep: rgba(74, 34, 44, 0.26);
+  --shadow-deep: rgba(0, 0, 0, 0.6);
 
-  --font-display: 'Bricolage Grotesque', sans-serif;
-  --font-story: 'Newsreader', serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Geist', system-ui, sans-serif;
+  --font-story: 'Geist', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
 *, *::before, *::after {
@@ -53,13 +43,7 @@ html {
 }
 
 body {
-  /* graph paper. The margin the picture gives up is not empty page, it is
-     the sheet the picture is lying on. */
   background-color: var(--paper);
-  background-image:
-    linear-gradient(rgba(6, 8, 15, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(6, 8, 15, 0.05) 1px, transparent 1px);
-  background-size: 26px 26px;
   color: var(--ink);
   font-family: var(--font-story);
   overflow-x: hidden;
@@ -68,6 +52,11 @@ body {
 ::selection {
   background: var(--tide);
   color: var(--paper);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {

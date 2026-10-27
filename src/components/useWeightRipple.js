@@ -1,12 +1,12 @@
 // Variable-font ripple: letters thin out under the cursor and spring back as
-// it passes (Bricolage's wght axis, loaded as a 200..800 range). Reads all
+// it passes (Geist's wght axis, loaded as a 100..900 range). Reads all
 // letter rects first, then writes, so weight-induced reflow happens once.
 import { useEffect } from 'react';
 
 export default function useWeightRipple(ref, {
   enabled = true,
   selector = 'span span',
-  base = 400,
+  base = 500,
   min = 200,
   radius = 150,
 } = {}) {

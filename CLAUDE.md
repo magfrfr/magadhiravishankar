@@ -16,36 +16,35 @@ No test suite is configured. Visual changes are verified with `scripts/shoot.mjs
 
 **Do not verify by screenshotting a browser tab you are driving remotely.** A backgrounded Chrome tab gets `visibilityState: "hidden"` and fires zero `requestAnimationFrame` callbacks, so the scene, the camera rig and every framer-motion animation freeze at once and the page looks catastrophically broken when nothing is wrong. `shoot.mjs` is the reliable check.
 
-## Architecture (v7.5, "the desk")
+## Architecture (v8.0, "the field")
 
 Single-page React 19 + Vite app. Entry: `src/main.jsx` -> `src/App.jsx`. **No StrictMode**, the custom rAF layers are simpler without dev double-mounting.
 
-**The premise.** Scrolling does not move an object down the page. It dollies a camera through one 3D desk, and the desk is seen through a **picture window** whose rectangle opens and closes as you go. The half the window gives up is exactly where that chapter's text sits, so the composition creates the text column instead of leaving dead space. Reference is illoca.unseen.co, which is not an illustration: it is a 3D scene wearing a two-tone posterised shader with ink edges and grain.
+**The premise.** A dark page and one cloud of glowing particles that changes shape with the scroll: a ringed sphere for the hero, stacked signal traces for the work, a spiral disc for the range, a horizon for the sign-off. Every particle owns a slot in all four formations, so moving between chapters is the cloud pouring from one shape into the next, staggered per particle and swinging out on its own arc mid-flight. The field lives inside a **picture window** that opens on whichever side of the screen the chapter text is not using. The window has no border: the shader fades the field to exactly zero at its edges, and `.scene-frame` paints a radial glow that also reaches zero there.
 
-**Layout rule (hers, non-negotiable):** nothing from the scene may sit behind **any** text, including the giant display words. The old v5.0 amendment that let objects cross display type is dead; her name across the desk was the single worst thing on the page. `FRAMES` in `deskPieces.js` and the chapter paddings in `App.css` are two halves of one decision. Move one and you must move the other.
+v8.0 (2026-10-27) replaced the v7 desk, her words: "too old looking, i want fresh amazing seamless". She picked dark cinematic from four options. The desk is in git at `25f4bef` if ever needed.
 
-**Two compositions, one breakpoint.** At or above 981px (`wide`) the window is half the screen and the chapter text sits in the other half. Below it there is no half to give up: a phone chapter runs three or four screens tall, so a window pinned to the viewport would have the copy scrolling straight through it. The picture becomes a **figure in the flow** instead — each chapter renders an empty `.chapter-slot` box and the rig clips the canvas to that box's live rect, so the picture behaves like an image on a page and the copy can never reach it. 981 appears in two places, `SPLIT_QUERY` in `App.jsx` and the `min-width` block in `App.css`, and they have to stay the same number.
+**Layout rule (hers, non-negotiable):** nothing from the scene may sit behind **any** text. `FRAMES` in `field/fieldShapes.js` and the chapter paddings in `App.css` are two halves of one decision. Move one and you must move the other.
+
+**Two compositions, one breakpoint.** At or above 981px (`wide`) the window is half the screen and the chapter text sits in the other half. Below it the window follows an empty `.chapter-slot` box in the flow, so the copy can never reach it. 981 appears in two places, `SPLIT_QUERY` in `App.jsx` and the `min-width` block in `App.css`, and they have to stay the same number.
 
 ### Scene (`src/scene/`)
 
-Lazy-loaded R3F `<Canvas shadows>` fixed behind the DOM (`Scene.jsx`), which mounts only `DeskRig` and `Desk`.
+Lazy-loaded R3F `<Canvas>` fixed behind the DOM (`Scene.jsx`), which mounts only `FieldRig` and `Field`. No shadows, no post-processing: additive points on a transparent canvas over a near-black page.
 
-- **`scrollBus.js`** is a plain mutable object shared between the DOM and the frame loop. `bus.u` is the continuous chapter coordinate (0=hero to 3=connect) read from live section rects. `CHAPTER_IDS` MUST match the ids in `content.js`; if they drift, `readChapterCoord` freezes and the whole scene goes dead. **Must stay three-free**, because DOM layers import its envelope math and pulling three.js in here would drag it into the main bundle.
-- **`desk/deskPieces.js`** is the desk as data. Every piece is a primitive (`box`, `cyl`, `cone`); the look comes from shading and ink edges, not modelling. Per-piece flags: `t` albedo (0 dark object, 1 white paper), `e:false` to skip ink edges, `s:false` to stop casting a shadow, `d` the drawing kind, `dev` marks the one sheet that develops. Also holds `CAMERA_STOPS`, `FRAMES` and `LITE_SPANS`, all three length-coupled to the chapter count.
-- **`desk/deskMaterial.js`** is the three-band toon `ShaderMaterial` (`lights: true`, `getShadowMask()`), warm paper against saturated burgundy. `PAL.shade` here and `--tide` in `index.css` are one decision in two files: the scene is most of what a visitor sees, so the page's colour is really this shader's.
-- **`desk/deskDrawings.js`** generates seeded canvas textures for the sheets, sampled as an alpha mask. Kinds are `signal` (EEG channels whose noise falls away as the stage rises), `chart` and `notes`.
-- **`desk/Desk.jsx`** builds the group, adds `EdgesGeometry` ink lines per piece, and crossfades the developing sheet's stages in `useFrame`.
-- **`desk/DeskRig.jsx`** is the camera dolly along a CatmullRom through `CAMERA_STOPS`, and the only writer of `bus.u`, `bus.sceneReady` and the `--frame-*` CSS variables. It takes the window either from `FRAMES` (wide) or from the picture slot nearest the viewport (lite). On wide, `CHROME_PX` holds the window's top edge below the fixed rail and corner link, which are sized in pixels and so cannot be cleared by any vh number on a short window.
+- **`scrollBus.js`** is a plain mutable object shared between the DOM and the frame loop. `bus.u` is the continuous chapter coordinate (0=hero to 3=connect) read from live section rects. `bus.field` is where the rig tells the field to sit. `CHAPTER_IDS` MUST match the ids in `content.js`. **Must stay three-free**, because DOM layers import it.
+- **`field/fieldShapes.js`** holds `FRAMES` (the window per chapter), `EXTENTS` (each formation's half size, which the fit reads) and `buildFormations`, which seeds all four position sets. All three are length-coupled to the chapter count.
+- **`field/FieldRig.jsx`** is the only writer of `bus.u`, `bus.sceneReady`, `bus.field` and the `--frame-*` CSS variables. It computes the window (from `FRAMES` on wide, from the nearest slot on lite), centres and scales the formation to fill 84% of it, and picks which two formations the scroll sits between and how far through the morph it is. The camera stays on the z axis and only drifts with the pointer.
+- **`field/Field.jsx`** is the `Points` mesh and its shader. The vertex shader animates all four formations, blends the two current ones per particle, lets the pointer part the cloud and lets scroll velocity smear it. The fragment shader draws a soft dot and multiplies it by the distance to the window edge (`uRect`, in device pixels, GL origin bottom-left), which is what keeps the field off the type now that the canvas has no clip-path.
 
-**Parked, still on disk, NOT mounted:** `Orb.jsx`, `orbShader.js`, `chapterMath.js`, `environments/*`, `Grade.jsx` (bloom and DOF), and `components/FluidSea.jsx` plus `Ferrofluid.jsx` (commented out in `App.jsx`). They are the v6.0 orb build. Re-wire before re-mounting anything.
+**Parked, still on disk, NOT mounted:** `Orb.jsx`, `orbShader.js`, `chapterMath.js`, `environments/*`, `Grade.jsx` (bloom and DOF), and `components/FluidSea.jsx` plus `Ferrofluid.jsx` (commented out in `App.jsx`). They are the v6.0 orb build.
 
-### Four things that will bite you
+### Things that will bite you
 
-1. **The vertex shader needs `beginnormal_vertex` and `defaultnormal_vertex`.** `shadowmap_vertex` reads `transformedNormal`; drop those chunks and the program fails to link.
-2. **`--frame-t/r/b/l` may only be declared on `:root`.** A copy of them on `.scene-canvas` beats the inherited value and silently freezes the window at its default.
-3. **Albedo is applied inside each band, never as a mix toward light afterwards.** The latter washes the whole scene to milk.
-4. **The back wall must not cast a shadow** (`s: false`) or it throws one across the entire desk and everything goes blue.
-5. **A window clipped to nothing still draws its hairline.** `.scene-frame` is a bordered box, so when the lite slot scrolls off and the inset clamps to zero height it becomes a rule straight across the top or bottom of the screen. `--frame-op` fades it out with the last of its height.
+1. **`--frame-t/r/b/l` may only be declared on `:root`.** A copy on `.scene-canvas` beats the inherited value and silently freezes the window at its default.
+2. **The field's edge fade is the only thing keeping it off the type.** If you ever add a clip-path back, fine, but never remove the `uRect` fade without one, or the cloud spills across the text column.
+3. **The morph runs a little wider than the window swap** (`MORPH_LEAD` in FieldRig). That is deliberate: the cloud starts leaving before the window moves. It still finishes inside the window, because the edge fade follows the window, not the formation.
+4. **A window with no height still paints.** `--frame-op` fades `.scene-frame` with the last of its height.
 
 ### Frame timing
 
@@ -57,13 +56,9 @@ It has to be per gap, because the chapters are nothing like each other in height
 
 **Verify with a scripted sweep, not by eye.** Walk the scroll in 0.01 steps, read `--frame-*` off `:root`, and intersect it with the client rect of every text node whose chapter is above ~0.03 opacity. It must print nothing. Screenshots at four stops will not catch this: all three overlaps sat between the stops.
 
-The camera also pans so the subject centres in the **visible** window rather than the canvas, which is why a shot framed for the full canvas arrives cropped at the half-width stops.
-
 ### Fitting the lite shots
 
-The wide distances in `CAMERA_STOPS` are hand-tuned against the wide `FRAMES` and stay exactly as they are. A slot has no such pairing — its shape is whatever the phone's width and the CSS height make it — so the lite path throws the distance away and solves it: `LITE_SPANS` names a world-space box per stop and the camera pulls back until that box **covers** the slot. Cover, not contain: taking the further of the two fits leaves the desk floating in the middle of a wide slot with paper all around it. Only the distance changes, so a phone sees the same four angles.
-
-`LITE_SPANS` and the `.chapter-slot` heights in `App.css` are the two halves of that decision, the same way `FRAMES` and the chapter paddings are for the wide build. A shorter slot crops harder at the same span.
+Below the breakpoint the window is whatever box `.chapter-slot` happens to be, and the formation is fitted to it the same way as on wide: centred, scaled to 84% of the box by `EXTENTS`. There is no per-stop tuning to keep in sync any more.
 
 ## Content
 
@@ -83,13 +78,13 @@ ALL copy lives in `src/content.js` (META, LOADER, CONTACT, PROFILE, CV, SOCIALS,
 - **`ToolBand.jsx`** is the skills band at the foot of the work chapter. It borrows RangeList's skeleton (mono label left, wrapped items right, one hairline per group) but sets the items small, so it reads as the spec under the work rather than a second headline list.
 - **`RangeList.jsx`** is the thirteen things as grouped type with one shared caption line on hover. This replaced, in order, a physics pile, a card rail, a 3D voxel heap and a dome. Read the memory file before proposing another one.
 - **`.chapter-slot`** is the empty box each chapter renders below the split breakpoint for the rig to clip the picture to. It carries no visuals of its own, only height.
-- **Chrome is flat**, on phones too. `.glass` is a flat chip: 3px radius, one 1px ink rule, no blur. A `@media (pointer: coarse)` override was still painting the old frosted gradient on every chip below 768px long after v6.0 flattened them; it is gone. `.corner-cta` carries its own opaque `--surface` background instead, because it is fixed and every heading on the page eventually passes under it. The frosted iridescent version, the `.atmosphere` glow blooms, `.vignette` and `.cursor-glow` were all deleted, because they were a soft-focus language fighting a hard-edged picture. Do not restore them without asking.
+- **Chrome is flat**, on phones too. `.glass` is a flat chip: 3px radius, one 1px rule, no blur, rose on hover. A `@media (pointer: coarse)` override was still painting the old frosted gradient on every chip below 768px long after v6.0 flattened them; it is gone. `.corner-cta` carries its own opaque `--surface` background instead, because it is fixed and every heading on the page eventually passes under it. The frosted iridescent version, the `.atmosphere` glow blooms, `.vignette` and `.cursor-glow` were all deleted, because they were a soft-focus language fighting a hard-edged picture. Do not restore them without asking.
 - Lenis smooth scroll (skipped in lite and reduced-motion); `chapters/useChapterFade.js` gives scroll-linked dissolves; `AnnotationRail.jsx` is the fixed mono line that scramble-rewrites per chapter; `Magnetic.jsx` wraps the corner link and the socials; `Loader.jsx` is the boot overlay whose counter crawls to 88% until `bus.sceneReady` then sprints (the timing and the `dt` clamps are load-bearing, the dial is only styling); `Cursor.jsx` is desktop-only.
 - **Pets (`src/pets/`)** are two pixel bunnies, Ash and Kiko. Hers, explicitly kept, do not propose cutting them. If you touch bunny art, rasterize and LOOK at it: ears must be long, narrow and separated.
 
 ## Modes
 
-`liteMode` is a coarse pointer or a viewport at or under 768px, and it governs cost: device pixel ratio 1, no antialias, a 1024 shadow map, no Lenis, no cursor and no rail. `wide` is a viewport at or over 981px and it governs **composition**: which of the two picture arrangements the page is in. They are separate on purpose. The band between 769 and 980px is a mouse-driven desktop window that still gets the in-flow picture, which is the arrangement that fits it.
+`liteMode` is a coarse pointer or a viewport at or under 768px, and it governs cost: device pixel ratio 1, no antialias, 6,000 particles instead of 18,000, no Lenis, no cursor and no rail. `wide` is a viewport at or over 981px and it governs **composition**: which of the two picture arrangements the page is in. They are separate on purpose. The band between 769 and 980px is a mouse-driven desktop window that still gets the in-flow picture, which is the arrangement that fits it.
 
 `prefers-reduced-motion` drops letter animation, parallax and the scroll reveals.
 
@@ -101,12 +96,12 @@ So the display type and every vertical gap in those two chapters carry a vh term
 
 ## Styling
 
-Tokens in `src/index.css`, layout in `src/App.css`. The ground is **warm paper** (`--paper: #e7e1d3`) carrying a 26px graph-paper grid, so the margin the picture gives up reads as the sheet the picture is lying on. `--tide` is the same burgundy the desk casts its shadows in, so type rules and the picture share one hue.
+Tokens in `src/index.css`, layout in `src/App.css`. **Dark since v8.0**: `--paper` is `#08080b` (the name stayed, the colour is night), type is bone white `--ink` `#f2f0ec`, and there is ONE accent, rose `--tide` `#ff4d6d`, which is her burgundy brought up to a brightness that holds on black. The field adds a violet (`--cool-rgb`) for depth only; it never goes on type. The hero's full stop and every work metric carry the rose. Palette history: periwinkle, teal, royal blue, burgundy, now rose on black. Do not propose another without her asking.
 
-**The palette is burgundy, hers, 2026-10-01** ("it looks like the default windows blue"). It replaced a royal blue, which had replaced a teal, which had replaced pale periwinkle. Each of those swaps left hardcoded `rgba()` behind — three teal literals were still in the loader and the work chips two palettes later. **So colour literals now come from `--tide-rgb` / `--ember-rgb` / `--scene-ink-rgb` via `rgb(var(--tide-rgb) / 0.22)`. Do not hand-write a colour in App.css.** `--iris` and the bunny sprites are outside the palette and stay whatever she made them.
+**Colour literals come from `--tide-rgb` / `--ember-rgb` / `--ink-rgb` / `--cool-rgb` via `rgb(var(--tide-rgb) / 0.22)`. Do not hand-write a colour in App.css.** Every past palette swap left hardcoded `rgba()` behind. `--iris` and the bunny sprites are outside the palette.
 
-**Every accent on type must clear 4.5:1 against `--paper`, and this is checked, not eyeballed.** Two were failing for a long time and that is what "the readability is still an issue" meant: `--faint` at **2.79:1** (the eyebrow, scroll hint, hero meta, study keys, tools labels, footer) and `--ember` at **3.75:1**. They are now 4.59:1 and 6.11:1, `--dim` is 6.00:1 and `--tide` 7.85:1. The smallest mono labels also went from 0.58rem to 0.64rem, because 9px with 0.2em tracking is not a size, it is a texture.
+**Every colour on type must clear 4.5:1 against `--paper`, checked by script, not by eye.** Current: `--tide` 6.22, `--ember` 8.94, `--dim` 8.67, `--faint` 5.12, `--ink` 17.6.
 
-Fonts: Bricolage Grotesque (display, weight 400 not 800), Newsreader (story), JetBrains Mono (annotations).
+Fonts: **Geist** (display and body, variable 100..900, so the weight ripple works; hero 600, titles 500, tracked tight) and **Geist Mono** (annotations). The serif and the italics are gone: they were most of what read as "old". `index.html` carries an inline dark background so there is no white flash before the CSS loads.
 
 **Lint note:** `react-hooks/purity` and `immutability` are off for `src/scene/**` only. `react-hooks/refs` is NOT, so writing `ref.current` inside a `useMemo` will fail lint. Return the handle from the memo instead.

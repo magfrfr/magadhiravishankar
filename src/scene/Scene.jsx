@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { bus } from './scrollBus';
-import Desk from './desk/Desk';
-import DeskRig from './desk/DeskRig';
+import Field from './field/Field';
+import FieldRig from './field/FieldRig';
 
 export default function Scene({ liteMode, reducedMotion, wide }) {
   const wrap = useRef(null);
@@ -30,13 +30,12 @@ export default function Scene({ liteMode, reducedMotion, wide }) {
   return (
     <div ref={wrap} className="scene-canvas" aria-hidden="true">
       <Canvas
-        shadows
-        camera={{ position: [0, 10, 15], fov: 38 }}
+        camera={{ position: [0, 0, 10], fov: 35 }}
         dpr={liteMode ? 1 : [1, 1.75]}
         gl={{ antialias: !liteMode, alpha: true, powerPreference: 'high-performance' }}
       >
-        <DeskRig liteMode={liteMode} reducedMotion={reducedMotion} wide={wide} />
-        <Desk liteMode={liteMode} />
+        <FieldRig liteMode={liteMode} reducedMotion={reducedMotion} wide={wide} />
+        <Field liteMode={liteMode} reducedMotion={reducedMotion} />
       </Canvas>
     </div>
   );

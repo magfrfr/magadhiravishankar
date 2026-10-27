@@ -103,7 +103,7 @@ export default function App() {
         <Scene liteMode={liteMode} reducedMotion={reducedMotion} wide={wide} />
       </Suspense>
       {/* the ferrofluid band was tuned to sit under an orb on paper; it fights
-          the desk. Parked while the scene direction is being judged:
+          the field. Parked:
           <FluidSea liteMode={liteMode} /> */}
       <div className="scene-frame" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
